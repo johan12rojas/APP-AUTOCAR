@@ -20,8 +20,9 @@ class DatabaseHelper {
     String path = join(await getDatabasesPath(), 'bitacora_mantenimiento.db');
     return await openDatabase(
       path,
-      version: 1,
+      version: 2,
       onCreate: _onCreate,
+      onUpgrade: _onUpgrade,
     );
   }
 
@@ -35,7 +36,14 @@ class DatabaseHelper {
         ano TEXT NOT NULL,
         placa TEXT NOT NULL UNIQUE,
         color TEXT NOT NULL,
-        kilometraje INTEGER NOT NULL
+        kilometraje INTEGER NOT NULL,
+        tipo TEXT NOT NULL DEFAULT 'auto',
+        estadoAceite INTEGER NOT NULL DEFAULT 100,
+        estadoLlantas INTEGER NOT NULL DEFAULT 100,
+        estadoFrenos INTEGER NOT NULL DEFAULT 100,
+        estadoBateria INTEGER NOT NULL DEFAULT 100,
+        proximoMantenimiento TEXT NOT NULL DEFAULT 'Sin mantenimientos programados',
+        kmProximoMantenimiento INTEGER NOT NULL DEFAULT 0
       )
     ''');
 
@@ -56,18 +64,35 @@ class DatabaseHelper {
     ''');
   }
 
+  Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
+    if (oldVersion < 2) {
+      // Agregar nuevas columnas a la tabla vehiculos
+      await db.execute('ALTER TABLE vehiculos ADD COLUMN tipo TEXT NOT NULL DEFAULT "auto"');
+      await db.execute('ALTER TABLE vehiculos ADD COLUMN estadoAceite INTEGER NOT NULL DEFAULT 100');
+      await db.execute('ALTER TABLE vehiculos ADD COLUMN estadoLlantas INTEGER NOT NULL DEFAULT 100');
+      await db.execute('ALTER TABLE vehiculos ADD COLUMN estadoFrenos INTEGER NOT NULL DEFAULT 100');
+      await db.execute('ALTER TABLE vehiculos ADD COLUMN estadoBateria INTEGER NOT NULL DEFAULT 100');
+      await db.execute('ALTER TABLE vehiculos ADD COLUMN proximoMantenimiento TEXT NOT NULL DEFAULT "Sin mantenimientos programados"');
+      await db.execute('ALTER TABLE vehiculos ADD COLUMN kmProximoMantenimiento INTEGER NOT NULL DEFAULT 0');
+    }
+  }
+
   // Métodos para vehículos
   Future<int> insertVehiculo(Vehiculo vehiculo) async {
     final db = await database;
     return await db.insert('vehiculos', vehiculo.toMap());
   }
 
-  Future<List<Vehiculo>> getAllVehiculos() async {
+  Future<List<Vehiculo>> getVehiculos() async {
     final db = await database;
     final List<Map<String, dynamic>> maps = await db.query('vehiculos');
     return List.generate(maps.length, (i) {
       return Vehiculo.fromMap(maps[i]);
     });
+  }
+
+  Future<List<Vehiculo>> getAllVehiculos() async {
+    return getVehiculos();
   }
 
   Future<Vehiculo?> getVehiculo(int id) async {
@@ -119,6 +144,10 @@ class DatabaseHelper {
     return List.generate(maps.length, (i) {
       return Mantenimiento.fromMap(maps[i]);
     });
+  }
+
+  Future<List<Mantenimiento>> getMantenimientosPorVehiculo(int vehiculoId) async {
+    return getMantenimientosByVehiculo(vehiculoId);
   }
 
   Future<List<Mantenimiento>> getAllMantenimientos() async {

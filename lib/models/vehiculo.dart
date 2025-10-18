@@ -6,6 +6,13 @@ class Vehiculo {
   final String placa;
   final String color;
   final int kilometraje;
+  final String tipo; // 'auto' o 'moto'
+  final int estadoAceite; // Porcentaje de estado del aceite (0-100)
+  final int estadoLlantas; // Porcentaje de estado de las llantas (0-100)
+  final int estadoFrenos; // Porcentaje de estado de los frenos (0-100)
+  final int estadoBateria; // Porcentaje de estado de la batería (0-100)
+  final String proximoMantenimiento; // Descripción del próximo mantenimiento
+  final int kmProximoMantenimiento; // Kilometraje para próximo mantenimiento
 
   Vehiculo({
     this.id,
@@ -15,6 +22,13 @@ class Vehiculo {
     required this.placa,
     required this.color,
     required this.kilometraje,
+    this.tipo = 'auto',
+    this.estadoAceite = 100,
+    this.estadoLlantas = 100,
+    this.estadoFrenos = 100,
+    this.estadoBateria = 100,
+    this.proximoMantenimiento = 'Sin mantenimientos programados',
+    this.kmProximoMantenimiento = 0,
   });
 
   Map<String, dynamic> toMap() {
@@ -26,6 +40,13 @@ class Vehiculo {
       'placa': placa,
       'color': color,
       'kilometraje': kilometraje,
+      'tipo': tipo,
+      'estadoAceite': estadoAceite,
+      'estadoLlantas': estadoLlantas,
+      'estadoFrenos': estadoFrenos,
+      'estadoBateria': estadoBateria,
+      'proximoMantenimiento': proximoMantenimiento,
+      'kmProximoMantenimiento': kmProximoMantenimiento,
     };
   }
 
@@ -38,6 +59,13 @@ class Vehiculo {
       placa: map['placa'],
       color: map['color'],
       kilometraje: map['kilometraje'],
+      tipo: map['tipo'] ?? 'auto',
+      estadoAceite: map['estadoAceite'] ?? 100,
+      estadoLlantas: map['estadoLlantas'] ?? 100,
+      estadoFrenos: map['estadoFrenos'] ?? 100,
+      estadoBateria: map['estadoBateria'] ?? 100,
+      proximoMantenimiento: map['proximoMantenimiento'] ?? 'Sin mantenimientos programados',
+      kmProximoMantenimiento: map['kmProximoMantenimiento'] ?? 0,
     );
   }
 
@@ -49,6 +77,13 @@ class Vehiculo {
     String? placa,
     String? color,
     int? kilometraje,
+    String? tipo,
+    int? estadoAceite,
+    int? estadoLlantas,
+    int? estadoFrenos,
+    int? estadoBateria,
+    String? proximoMantenimiento,
+    int? kmProximoMantenimiento,
   }) {
     return Vehiculo(
       id: id ?? this.id,
@@ -58,6 +93,13 @@ class Vehiculo {
       placa: placa ?? this.placa,
       color: color ?? this.color,
       kilometraje: kilometraje ?? this.kilometraje,
+      tipo: tipo ?? this.tipo,
+      estadoAceite: estadoAceite ?? this.estadoAceite,
+      estadoLlantas: estadoLlantas ?? this.estadoLlantas,
+      estadoFrenos: estadoFrenos ?? this.estadoFrenos,
+      estadoBateria: estadoBateria ?? this.estadoBateria,
+      proximoMantenimiento: proximoMantenimiento ?? this.proximoMantenimiento,
+      kmProximoMantenimiento: kmProximoMantenimiento ?? this.kmProximoMantenimiento,
     );
   }
 }
