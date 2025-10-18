@@ -1,73 +1,172 @@
-# Bitácora de Mantenimiento Vehicular
+# 🚗 AUTOCAR - Bitácora de Mantenimiento Vehicular
 
-Una aplicación móvil desarrollada en Flutter para gestionar el mantenimiento de vehículos.
+Una aplicación móvil desarrollada en Flutter para la gestión completa de vehículos y sus mantenimientos.
 
-## Características
+## ✨ Características
 
-- **Gestión de Vehículos**: Registra y administra información de tus vehículos
-- **Registro de Mantenimientos**: Lleva un control detallado de todos los mantenimientos realizados
-- **Historial Completo**: Visualiza el historial de mantenimientos por vehículo
-- **Persistencia de Datos**: Los datos se guardan localmente usando SQLite
-- **Interfaz Intuitiva**: Diseño moderno y fácil de usar
+- 📱 **Interfaz moderna** con Material Design
+- 🗄️ **Base de datos local** SQLite para almacenamiento offline
+- 📊 **Gestión completa** de vehículos y mantenimientos
+- 🔍 **Búsqueda y filtrado** de registros
+- 📈 **Historial detallado** de mantenimientos por vehículo
+- ⚙️ **Configuración moderna** con Java 17
 
-## Funcionalidades
+## 🏗️ Arquitectura
 
-### Vehículos
-- Agregar nuevos vehículos con información completa (marca, modelo, año, placa, color, kilometraje)
-- Visualizar lista de vehículos registrados
-- Ver detalles de cada vehículo
+### Modelos de Datos
+- **Vehículo**: Información básica del vehículo (marca, modelo, año, etc.)
+- **Mantenimiento**: Registros de mantenimientos con fechas, tipos y detalles
 
-### Mantenimientos
-- Registrar diferentes tipos de mantenimiento (Preventivo, Correctivo, Predictivo)
-- Incluir información detallada (fecha, descripción, costo, kilometraje, taller)
-- Agregar notas adicionales
-- Visualizar historial completo de mantenimientos
-- Eliminar registros de mantenimiento
+### Pantallas
+- **Home**: Vista principal con lista de vehículos
+- **Detalle Vehículo**: Información completa del vehículo y sus mantenimientos
+- **Agregar Vehículo**: Formulario para registrar nuevos vehículos
+- **Detalle Mantenimiento**: Información detallada de cada mantenimiento
+- **Agregar Mantenimiento**: Formulario para registrar nuevos mantenimientos
 
-## Instalación
+### Base de Datos
+- **SQLite** con helper personalizado
+- **Esquemas optimizados** para consultas rápidas
+- **Relaciones** entre vehículos y mantenimientos
 
-1. Asegúrate de tener Flutter instalado en tu sistema
-2. Clona o descarga este proyecto
-3. Ejecuta `flutter pub get` para instalar las dependencias
-4. Ejecuta `flutter run` para iniciar la aplicación
+## 🛠️ Stack Tecnológico
 
-## Dependencias
+- **Flutter SDK** >=3.0.0
+- **Dart** - Lenguaje de programación
+- **SQLite** (sqflite) - Base de datos local
+- **Material Design** - Sistema de diseño
+- **Java 17** + Kotlin DSL - Configuración Android moderna
+- **Gradle 8.12** - Sistema de construcción
 
-- `sqflite`: Para la base de datos local
-- `path`: Para manejo de rutas de archivos
-- `intl`: Para formateo de fechas
+## 📋 Requisitos
 
-## Estructura del Proyecto
+- Flutter SDK >=3.0.0
+- Dart SDK
+- Android Studio / VS Code
+- Dispositivo Android o emulador
+
+## 🚀 Instalación y Configuración
+
+1. **Clonar el repositorio**
+   ```bash
+   git clone https://github.com/johan12rojas/APP-AUTOCAR.git
+   cd APP-AUTOCAR
+   ```
+
+2. **Instalar dependencias**
+   ```bash
+   flutter pub get
+   ```
+
+3. **Ejecutar la aplicación**
+   ```bash
+   flutter run
+   ```
+
+## 🔧 Configuración Técnica
+
+### Java 17 + Core Library Desugaring
+El proyecto está configurado con Java 17 y Core Library Desugaring habilitado para máxima compatibilidad:
+
+```kotlin
+compileOptions {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+    isCoreLibraryDesugaringEnabled = true
+}
+
+dependencies {
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
+}
+```
+
+### Gradle Optimizado
+Configuración optimizada para compilación rápida:
+- **R8 Full Mode** habilitado
+- **Compilación paralela**
+- **Cache de Gradle** activado
+
+## 📱 Funcionalidades
+
+### Gestión de Vehículos
+- ✅ Registrar nuevos vehículos
+- ✅ Editar información de vehículos existentes
+- ✅ Eliminar vehículos
+- ✅ Ver lista completa de vehículos
+
+### Gestión de Mantenimientos
+- ✅ Registrar mantenimientos por vehículo
+- ✅ Diferentes tipos de mantenimiento
+- ✅ Fechas y kilometraje
+- ✅ Notas y observaciones
+- ✅ Historial completo por vehículo
+
+### Base de Datos
+- ✅ Esquema optimizado
+- ✅ Relaciones entre tablas
+- ✅ Consultas eficientes
+- ✅ Migración automática
+
+## 📊 Estructura del Proyecto
 
 ```
 lib/
-├── main.dart                 # Punto de entrada de la aplicación
-├── models/                   # Modelos de datos
-│   ├── vehiculo.dart
-│   └── mantenimiento.dart
-├── database/                 # Configuración de base de datos
-│   └── database_helper.dart
-└── screens/                  # Pantallas de la aplicación
-    ├── home_screen.dart
-    ├── add_vehiculo_screen.dart
-    ├── vehiculo_detail_screen.dart
-    ├── add_mantenimiento_screen.dart
-    └── mantenimiento_detail_screen.dart
+├── database/
+│   └── database_helper.dart    # Helper para SQLite
+├── models/
+│   ├── vehiculo.dart           # Modelo Vehículo
+│   └── mantenimiento.dart      # Modelo Mantenimiento
+├── screens/
+│   ├── home_screen.dart        # Pantalla principal
+│   ├── vehiculo_detail_screen.dart
+│   ├── add_vehiculo_screen.dart
+│   ├── mantenimiento_detail_screen.dart
+│   └── add_mantenimiento_screen.dart
+└── main.dart                   # Punto de entrada
 ```
 
-## Uso
+## 🔄 Flujo de Datos
 
-1. **Agregar Vehículo**: Toca el botón "+" en la pantalla principal para agregar un nuevo vehículo
-2. **Ver Detalles**: Toca cualquier vehículo para ver sus detalles y mantenimientos
-3. **Agregar Mantenimiento**: Toca el botón "+" en la pantalla de detalles del vehículo
-4. **Ver Historial**: Todos los mantenimientos se muestran ordenados por fecha
-5. **Eliminar**: Puedes eliminar mantenimientos desde la pantalla de detalles
+1. **Usuario** interactúa con la interfaz
+2. **Pantalla** valida y procesa datos
+3. **DatabaseHelper** maneja operaciones SQLite
+4. **Modelos** estructuran los datos
+5. **UI** se actualiza con los resultados
 
-## Características Técnicas
+## 🎯 Próximas Funcionalidades
 
-- **Base de Datos**: SQLite local para persistencia de datos
-- **Arquitectura**: Patrón MVC con separación clara de responsabilidades
-- **UI**: Material Design 3 con tema personalizado
-- **Validación**: Validación completa de formularios
-- **Navegación**: Navegación fluida entre pantallas
+- [ ] Exportar datos a PDF
+- [ ] Notificaciones de mantenimientos próximos
+- [ ] Gráficos de gastos por vehículo
+- [ ] Sincronización con servidor
+- [ ] Modo oscuro
+- [ ] Backup automático
 
+## 🤝 Contribuciones
+
+Las contribuciones son bienvenidas. Por favor:
+
+1. Fork el proyecto
+2. Crea una rama para tu feature (`git checkout -b feature/AmazingFeature`)
+3. Commit tus cambios (`git commit -m 'Add some AmazingFeature'`)
+4. Push a la rama (`git push origin feature/AmazingFeature`)
+5. Abre un Pull Request
+
+## 📄 Licencia
+
+Este proyecto está bajo la Licencia MIT. Ver el archivo `LICENSE` para más detalles.
+
+## 👨‍💻 Autor
+
+**Johan Rojas**
+- GitHub: [@johan12rojas](https://github.com/johan12rojas)
+
+## 📞 Soporte
+
+Si tienes preguntas o necesitas ayuda, puedes:
+- Abrir un issue en GitHub
+- Contactar al desarrollador
+
+---
+
+⭐ **¡Dale una estrella al proyecto si te gusta!** ⭐
