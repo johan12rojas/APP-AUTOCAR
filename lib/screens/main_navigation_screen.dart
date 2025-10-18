@@ -3,6 +3,8 @@ import 'inicio_screen.dart';
 import 'bitacora_screen.dart';
 import 'alertas_screen.dart';
 import 'perfil_screen.dart';
+import '../theme/autocar_theme.dart';
+import '../widgets/background_widgets.dart';
 
 class MainNavigationScreen extends StatefulWidget {
   const MainNavigationScreen({super.key});
@@ -24,14 +26,17 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _screens[_currentIndex],
+      body: BackgroundGradientWidget(
+        child: _screens[_currentIndex],
+      ),
       bottomNavigationBar: Container(
-        decoration: const BoxDecoration(
-          color: Color(0xFF1E3A8A), // Azul oscuro
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(20),
-            topRight: Radius.circular(20),
+        decoration: BoxDecoration(
+          gradient: AutocarTheme.primaryGradient,
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(25),
+            topRight: Radius.circular(25),
           ),
+          boxShadow: AutocarTheme.cardShadow,
         ),
         child: BottomNavigationBar(
           currentIndex: _currentIndex,
@@ -43,8 +48,8 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
           type: BottomNavigationBarType.fixed,
           backgroundColor: Colors.transparent,
           elevation: 0,
-          selectedItemColor: const Color(0xFFFF6B35), // Naranja
-          unselectedItemColor: Colors.white70,
+          selectedItemColor: AutocarTheme.accentOrange,
+          unselectedItemColor: AutocarTheme.textSecondary,
           selectedLabelStyle: const TextStyle(
             fontWeight: FontWeight.bold,
             fontSize: 12,
@@ -52,21 +57,57 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
           unselectedLabelStyle: const TextStyle(
             fontSize: 12,
           ),
-          items: const [
+          items: [
             BottomNavigationBarItem(
-              icon: Icon(Icons.home),
+              icon: Image.asset(
+                'assets/images/icons/car_icon.png',
+                width: 24,
+                height: 24,
+                color: _currentIndex == 0 ? AutocarTheme.accentOrange : AutocarTheme.textSecondary,
+                errorBuilder: (context, error, stackTrace) => Icon(
+                  Icons.home,
+                  color: _currentIndex == 0 ? AutocarTheme.accentOrange : AutocarTheme.textSecondary,
+                ),
+              ),
               label: 'Inicio',
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.book),
+              icon: Image.asset(
+                'assets/images/icons/maintenance_icon.png',
+                width: 24,
+                height: 24,
+                color: _currentIndex == 1 ? AutocarTheme.accentOrange : AutocarTheme.textSecondary,
+                errorBuilder: (context, error, stackTrace) => Icon(
+                  Icons.book,
+                  color: _currentIndex == 1 ? AutocarTheme.accentOrange : AutocarTheme.textSecondary,
+                ),
+              ),
               label: 'Bitácora',
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.notifications),
+              icon: Image.asset(
+                'assets/images/icons/alert_icon.png',
+                width: 24,
+                height: 24,
+                color: _currentIndex == 2 ? AutocarTheme.accentOrange : AutocarTheme.textSecondary,
+                errorBuilder: (context, error, stackTrace) => Icon(
+                  Icons.notifications,
+                  color: _currentIndex == 2 ? AutocarTheme.accentOrange : AutocarTheme.textSecondary,
+                ),
+              ),
               label: 'Alertas',
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.person),
+              icon: Image.asset(
+                'assets/images/icons/profile_icon.png',
+                width: 24,
+                height: 24,
+                color: _currentIndex == 3 ? AutocarTheme.accentOrange : AutocarTheme.textSecondary,
+                errorBuilder: (context, error, stackTrace) => Icon(
+                  Icons.person,
+                  color: _currentIndex == 3 ? AutocarTheme.accentOrange : AutocarTheme.textSecondary,
+                ),
+              ),
               label: 'Perfil',
             ),
           ],

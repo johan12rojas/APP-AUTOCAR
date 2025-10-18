@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'screens/main_navigation_screen.dart';
 import 'utils/data_seeder.dart';
+import 'theme/autocar_theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -25,30 +26,7 @@ class AUTOCARApp extends StatelessWidget {
 
     return MaterialApp(
       title: 'AUTOCAR - Bitácora de Mantenimiento',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-        useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF1E3A8A),
-          brightness: Brightness.dark,
-        ),
-        appBarTheme: const AppBarTheme(
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          iconTheme: IconThemeData(color: Colors.white),
-          titleTextStyle: TextStyle(
-            color: Colors.white,
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-          backgroundColor: Color(0xFF1E3A8A),
-          selectedItemColor: Color(0xFFFF6B35),
-          unselectedItemColor: Colors.white70,
-          type: BottomNavigationBarType.fixed,
-        ),
-      ),
+      theme: AutocarTheme.darkTheme,
       home: const MainNavigationScreen(),
       debugShowCheckedModeBanner: false,
     );

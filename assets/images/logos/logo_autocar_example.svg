@@ -1,0 +1,34 @@
+<!-- Logo AUTOCAR - Archivo SVG de ejemplo -->
+<!-- Puedes convertir este SVG a PNG usando herramientas online como: -->
+<!-- - https://convertio.co/svg-png/ -->
+<!-- - https://cloudconvert.com/svg-to-png -->
+<!-- - https://www.freeconvert.com/svg-to-png -->
+
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <!-- Fondo circular -->
+  <circle cx="256" cy="256" r="240" fill="#1E3A8A" stroke="#3B82F6" stroke-width="8"/>
+  
+  <!-- Icono de vehículo -->
+  <g transform="translate(256, 256)">
+    <!-- Cuerpo del vehículo -->
+    <rect x="-80" y="-20" width="160" height="40" rx="8" fill="#FF6B35"/>
+    
+    <!-- Ruedas -->
+    <circle cx="-60" cy="30" r="15" fill="#333333"/>
+    <circle cx="60" cy="30" r="15" fill="#333333"/>
+    
+    <!-- Ventanas -->
+    <rect x="-70" y="-15" width="30" height="20" rx="4" fill="#87CEEB"/>
+    <rect x="40" y="-15" width="30" height="20" rx="4" fill="#87CEEB"/>
+    
+    <!-- Faros -->
+    <circle cx="-80" cy="0" r="8" fill="#FFFF00"/>
+    <circle cx="80" cy="0" r="8" fill="#FFFF00"/>
+  </g>
+  
+  <!-- Texto AUTOCAR -->
+  <text x="256" y="380" text-anchor="middle" font-family="Arial, sans-serif" font-size="32" font-weight="bold" fill="#FFFFFF">AUTOCAR</text>
+  
+  <!-- Texto secundario -->
+  <text x="256" y="420" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#FF6B35">MANTENIMIENTO</text>
+</svg>
