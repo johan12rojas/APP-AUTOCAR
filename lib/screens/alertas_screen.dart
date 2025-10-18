@@ -462,6 +462,7 @@ class AlertasScreen extends StatelessWidget {
       case 'transmission': return 'assets/images/maintenance/transmission.png';
       case 'air_filter': return 'assets/images/maintenance/air_filter.png';
       case 'spark_plugs': return 'assets/images/maintenance/spark_plugs.png';
+      case 'alignment': return 'assets/images/maintenance/ali_bal.png';
       default: return 'assets/images/maintenance/oil_change.png';
     }
   }
@@ -472,6 +473,7 @@ class AlertasScreen extends StatelessWidget {
       case 'tires': return Icons.tire_repair;
       case 'brakes': return Icons.car_repair;
       case 'battery': return Icons.battery_alert;
+      case 'alignment': return Icons.settings;
       default: return Icons.build;
     }
   }

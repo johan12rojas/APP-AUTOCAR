@@ -229,8 +229,8 @@ class _BitacoraScreenState extends State<BitacoraScreen> with TickerProviderStat
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            Colors.tealAccent.withOpacity(0.8),
-            Colors.cyanAccent.withOpacity(0.6),
+            Colors.orangeAccent.withValues(alpha: 0.8),
+            Colors.deepOrangeAccent.withValues(alpha: 0.6),
           ],
           begin: Alignment.centerLeft,
           end: Alignment.centerRight,
@@ -238,12 +238,12 @@ class _BitacoraScreenState extends State<BitacoraScreen> with TickerProviderStat
         borderRadius: BorderRadius.circular(22),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.2),
+            color: Colors.black.withValues(alpha: 0.2),
             blurRadius: 8,
             offset: const Offset(4, 4),
           ),
           BoxShadow(
-            color: Colors.white.withOpacity(0.05),
+            color: Colors.white.withValues(alpha: 0.05),
             blurRadius: 8,
             offset: const Offset(-4, -4),
           ),
@@ -299,17 +299,36 @@ class _BitacoraScreenState extends State<BitacoraScreen> with TickerProviderStat
   Widget _buildTabs() {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.1),
+        gradient: LinearGradient(
+          colors: [
+            Colors.orangeAccent.withValues(alpha: 0.8),
+            Colors.deepOrangeAccent.withValues(alpha: 0.6),
+          ],
+          begin: Alignment.centerLeft,
+          end: Alignment.centerRight,
+        ),
         borderRadius: BorderRadius.circular(15),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.2),
+            blurRadius: 8,
+            offset: const Offset(4, 4),
+          ),
+          BoxShadow(
+            color: Colors.white.withValues(alpha: 0.05),
+            blurRadius: 8,
+            offset: const Offset(-4, -4),
+          ),
+        ],
         border: Border.all(
-          color: Colors.white.withOpacity(0.15),
+          color: Colors.white.withValues(alpha: 0.15),
           width: 1,
         ),
       ),
       child: TabBar(
         controller: _tabController,
         indicator: BoxDecoration(
-          color: Colors.white.withOpacity(0.2),
+          color: Colors.white.withValues(alpha: 0.2),
           borderRadius: BorderRadius.circular(12),
         ),
         labelColor: Colors.white,
@@ -492,57 +511,43 @@ class _BitacoraScreenState extends State<BitacoraScreen> with TickerProviderStat
           ],
           const SizedBox(height: 12),
           Row(
+            mainAxisAlignment: MainAxisAlignment.end,
             children: [
               if (mantenimiento.status != 'completed') ...[
-                Expanded(
-                  child: ElevatedButton.icon(
-                    onPressed: () => _mostrarCompletarMantenimiento(mantenimiento),
-                    icon: const Icon(Icons.check, size: 16),
-                    label: const Text('Completar'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.green,
-                      foregroundColor: Colors.white,
-                      elevation: 0,
-                      padding: const EdgeInsets.symmetric(vertical: 8),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
+                IconButton(
+                  onPressed: () => _mostrarCompletarMantenimiento(mantenimiento),
+                  icon: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.green,
+                      borderRadius: BorderRadius.circular(8),
                     ),
+                    child: const Icon(Icons.check, size: 16, color: Colors.white),
                   ),
                 ),
                 const SizedBox(width: 8),
               ],
-              Expanded(
-                child: ElevatedButton.icon(
-                  onPressed: () => _editarMantenimiento(mantenimiento),
-                  icon: const Icon(Icons.edit, size: 16),
-                  label: const Text('Editar'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blueAccent,
-                    foregroundColor: Colors.white,
-                    elevation: 0,
-                    padding: const EdgeInsets.symmetric(vertical: 8),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
+              IconButton(
+                onPressed: () => _editarMantenimiento(mantenimiento),
+                icon: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.blueAccent,
+                    borderRadius: BorderRadius.circular(8),
                   ),
+                  child: const Icon(Icons.edit, size: 16, color: Colors.white),
                 ),
               ),
               const SizedBox(width: 8),
-              Expanded(
-                child: ElevatedButton.icon(
-                  onPressed: () => _eliminarMantenimiento(mantenimiento),
-                  icon: const Icon(Icons.delete, size: 16),
-                  label: const Text('Eliminar'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.red,
-                    foregroundColor: Colors.white,
-                    elevation: 0,
-                    padding: const EdgeInsets.symmetric(vertical: 8),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
+              IconButton(
+                onPressed: () => _eliminarMantenimiento(mantenimiento),
+                icon: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.red,
+                    borderRadius: BorderRadius.circular(8),
                   ),
+                  child: const Icon(Icons.delete, size: 16, color: Colors.white),
                 ),
               ),
             ],
@@ -855,9 +860,25 @@ class _BitacoraScreenState extends State<BitacoraScreen> with TickerProviderStat
 
                 if (kilometrajeReal == null || kilometrajeVehiculo == null) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Por favor ingresa valores válidos para el kilometraje'),
-                      backgroundColor: Colors.red,
+                    SnackBar(
+                      content: Row(
+                        children: [
+                          const Icon(Icons.error_outline, color: Colors.white),
+                          const SizedBox(width: 8),
+                          const Expanded(
+                            child: Text(
+                              'Por favor ingresa valores válidos para el kilometraje',
+                              style: TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
+                            ),
+                          ),
+                        ],
+                      ),
+                      backgroundColor: Colors.red.shade600,
+                      behavior: SnackBarBehavior.floating,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      margin: const EdgeInsets.all(16),
                     ),
                   );
                   return;
@@ -874,9 +895,25 @@ class _BitacoraScreenState extends State<BitacoraScreen> with TickerProviderStat
                 await _cargarMantenimientos();
 
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Mantenimiento completado correctamente'),
-                    backgroundColor: Colors.green,
+                  SnackBar(
+                    content: Row(
+                      children: [
+                        const Icon(Icons.check_circle, color: Colors.white),
+                        const SizedBox(width: 8),
+                        const Expanded(
+                          child: Text(
+                            'Mantenimiento completado correctamente',
+                            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
+                          ),
+                        ),
+                      ],
+                    ),
+                    backgroundColor: Colors.green.shade600,
+                    behavior: SnackBarBehavior.floating,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    margin: const EdgeInsets.all(16),
                   ),
                 );
               },

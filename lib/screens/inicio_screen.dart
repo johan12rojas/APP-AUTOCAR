@@ -7,6 +7,7 @@ import '../viewmodels/vehiculo_viewmodel.dart';
 import '../services/maintenance_service.dart';
 import '../models/vehiculo.dart';
 import '../services/vehicle_image_service.dart';
+import '../services/user_preferences_service.dart';
 import 'agregar_vehiculo_screen.dart';
 import 'agendar_mantenimiento_screen.dart';
 import 'vehiculo_detail_screen.dart';
@@ -19,11 +20,20 @@ class InicioScreen extends StatefulWidget {
 }
 
 class _InicioScreenState extends State<InicioScreen> {
+  String _nombreUsuario = 'Usuario';
   @override
   void initState() {
     super.initState();
+    _cargarNombreUsuario();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<VehiculoViewModel>().cargarVehiculos();
+    });
+  }
+
+  Future<void> _cargarNombreUsuario() async {
+    final nombre = await UserPreferencesService.obtenerNombreUsuario();
+    setState(() {
+      _nombreUsuario = nombre;
     });
   }
 
@@ -307,12 +317,12 @@ class _InicioScreenState extends State<InicioScreen> {
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.15),
+        color: Colors.redAccent.withValues(alpha: 0.25),
         borderRadius: BorderRadius.circular(15),
-        border: Border.all(color: Colors.redAccent.withOpacity(0.6), width: 2),
+        border: Border.all(color: Colors.redAccent.withValues(alpha: 0.8), width: 2),
         boxShadow: [
           BoxShadow(
-            color: Colors.redAccent.withOpacity(0.2),
+            color: Colors.redAccent.withValues(alpha: 0.3),
             blurRadius: 8,
             offset: const Offset(0, 4),
           ),
@@ -326,7 +336,7 @@ class _InicioScreenState extends State<InicioScreen> {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: Colors.redAccent.withOpacity(0.2),
+                  color: Colors.redAccent.withValues(alpha: 0.4),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: const Icon(
@@ -448,10 +458,24 @@ class _InicioScreenState extends State<InicioScreen> {
               ),
             ),
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
               decoration: BoxDecoration(
-                color: AutocarTheme.accentOrange,
-                borderRadius: BorderRadius.circular(20),
+                gradient: LinearGradient(
+                  colors: [
+                    Colors.orangeAccent.withValues(alpha: 0.8),
+                    Colors.deepOrangeAccent.withValues(alpha: 0.6),
+                  ],
+                  begin: Alignment.centerLeft,
+                  end: Alignment.centerRight,
+                ),
+                borderRadius: BorderRadius.circular(15),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.2),
+                    blurRadius: 4,
+                    offset: const Offset(2, 2),
+                  ),
+                ],
               ),
               child: TextButton(
                 onPressed: () async {
@@ -469,8 +493,8 @@ class _InicioScreenState extends State<InicioScreen> {
                   '+ Agendar',
                   style: TextStyle(
                     color: Colors.white,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
+                    fontSize: 9,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ),
@@ -524,7 +548,7 @@ class _InicioScreenState extends State<InicioScreen> {
             height: 40,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(8),
-              color: Colors.white.withValues(alpha: 0.2),
+              color: Colors.white,
             ),
             child: Icon(
               _getIconData(icon),
@@ -546,12 +570,7 @@ class _InicioScreenState extends State<InicioScreen> {
                   ),
                 ),
                 const SizedBox(height: 8),
-                LinearProgressIndicator(
-                  value: porcentaje / 100,
-                  backgroundColor: Colors.white.withValues(alpha: 0.3),
-                  valueColor: AlwaysStoppedAnimation<Color>(color),
-                  minHeight: 6,
-                ),
+                _buildGradientProgressBar(porcentaje, color),
                 const SizedBox(height: 4),
                 Text(
                   kmRestantes > 0 
@@ -598,7 +617,7 @@ class _InicioScreenState extends State<InicioScreen> {
               child: _buildActionButton(
                 icon: Icons.schedule,
                 label: 'Agendar Mantenimiento',
-                color: AutocarTheme.accentGreen,
+                color: Colors.orangeAccent,
                 onTap: () async {
                   final result = await Navigator.push(
                     context,
@@ -866,12 +885,19 @@ class _InicioScreenState extends State<InicioScreen> {
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.1),
+        color: Colors.white.withValues(alpha: 0.25),
         borderRadius: BorderRadius.circular(15),
         border: Border.all(
-          color: Colors.white.withOpacity(0.2),
+          color: Colors.white.withValues(alpha: 0.3),
           width: 1,
         ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.1),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1037,34 +1063,63 @@ class _InicioScreenState extends State<InicioScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    "Bienvenido 👋",
-                    style: TextStyle(
-                      fontSize: 30,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white.withOpacity(0.9),
-                      letterSpacing: 1.2,
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFFFF6B35), Color(0xFFFF8A65)],
+                        ),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Icon(
+                        Icons.waving_hand,
+                        color: Colors.white,
+                        size: 24,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    "Optimiza tu vehículo y controla todo desde aquí",
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.white.withOpacity(0.8),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Text(
+                                "¡Bienvenido $_nombreUsuario!",
+                                style: TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white.withValues(alpha: 0.95),
+                                  letterSpacing: 0.5,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              const Text(
+                                "",
+                                style: TextStyle(fontSize: 20),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            "Tu centro de control vehicular inteligente",
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.white.withValues(alpha: 0.8),
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
+                  ],
+                ),
+                const SizedBox(height: 20),
                 ],
               ),
             ),
-            if (viewModel.vehiculos.length > 1)
-              IconButton(
-                onPressed: () => _showVehicleSelector(context, viewModel),
-                icon: const Icon(
-                  Icons.swap_horiz,
-                  color: Colors.white,
-                ),
-              ),
           ],
         ),
       ],
@@ -1127,13 +1182,35 @@ class _InicioScreenState extends State<InicioScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      '${vehiculo.marca} ${vehiculo.modelo}',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            '${vehiculo.marca} ${vehiculo.modelo}',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                        if (viewModel.vehiculos.length > 1)
+                          IconButton(
+                            onPressed: () => _showVehicleSelector(context, viewModel),
+                            icon: Container(
+                              padding: const EdgeInsets.all(6),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: 0.2),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: const Icon(
+                                Icons.swap_horiz,
+                                color: Colors.white,
+                                size: 18,
+                              ),
+                            ),
+                          ),
+                      ],
                     ),
                     const SizedBox(height: 4),
                     Text(
@@ -1163,17 +1240,35 @@ class _InicioScreenState extends State<InicioScreen> {
             ],
           ),
           const SizedBox(height: 15),
-          SizedBox(
+          Container(
             width: double.infinity,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  Colors.blueAccent.withValues(alpha: 0.8),
+                  Colors.blue.withValues(alpha: 0.6),
+                ],
+                begin: Alignment.centerLeft,
+                end: Alignment.centerRight,
+              ),
+              borderRadius: BorderRadius.circular(15),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.2),
+                  blurRadius: 4,
+                  offset: const Offset(2, 2),
+                ),
+              ],
+            ),
             child: ElevatedButton.icon(
               onPressed: () => _mostrarActualizarKilometraje(context, vehiculo, viewModel),
               icon: const Icon(Icons.speed, size: 20),
               label: const Text('Actualizar Kilometraje', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.orangeAccent.withOpacity(0.9),
+                backgroundColor: Colors.transparent,
                 foregroundColor: Colors.white,
-                elevation: 4,
-                padding: const EdgeInsets.symmetric(vertical: 16),
+                elevation: 0,
+                padding: const EdgeInsets.symmetric(vertical: 12),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(15),
                 ),
@@ -1231,7 +1326,7 @@ class _InicioScreenState extends State<InicioScreen> {
           crossAxisCount: 2,
           mainAxisSpacing: 20,
           crossAxisSpacing: 20,
-          childAspectRatio: 1.2,
+          childAspectRatio: 1.1,
           children: [
             _buildCard(
               icon: Icons.directions_car,
@@ -1266,7 +1361,7 @@ class _InicioScreenState extends State<InicioScreen> {
               icon: Icons.analytics,
               color: Colors.purpleAccent,
               title: "Estadísticas",
-              subtitle: "Consumo y kilometraje",
+              subtitle: "Consumo y km",
               onTap: () {
                 // TODO: Implementar pantalla de estadísticas
               },
@@ -1419,6 +1514,71 @@ class _InicioScreenState extends State<InicioScreen> {
             child: const Text('Actualizar'),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildGradientProgressBar(int porcentaje, Color baseColor) {
+    // Determinar los colores del gradiente basado en el color base
+    List<Color> gradientColors;
+    
+    if (baseColor == Colors.green) {
+      gradientColors = [Colors.green.shade300, Colors.green.shade600, Colors.green.shade800];
+    } else if (baseColor == Colors.blue) {
+      gradientColors = [Colors.blue.shade300, Colors.blue.shade600, Colors.blue.shade800];
+    } else if (baseColor == Colors.orange) {
+      gradientColors = [Colors.orange.shade300, Colors.orange.shade600, Colors.orange.shade800];
+    } else if (baseColor == Colors.red) {
+      gradientColors = [Colors.red.shade300, Colors.red.shade600, Colors.red.shade800];
+    } else if (baseColor == Colors.yellow) {
+      gradientColors = [Colors.yellow.shade300, Colors.yellow.shade600, Colors.yellow.shade800];
+    } else if (baseColor == Colors.purple) {
+      gradientColors = [Colors.purple.shade300, Colors.purple.shade600, Colors.purple.shade800];
+    } else if (baseColor == Colors.teal) {
+      gradientColors = [Colors.teal.shade300, Colors.teal.shade600, Colors.teal.shade800];
+    } else {
+      // Color por defecto
+      gradientColors = [baseColor.withValues(alpha: 0.3), baseColor, baseColor.withValues(alpha: 0.8)];
+    }
+
+    return Container(
+      height: 8,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(4),
+        color: Colors.white.withValues(alpha: 0.3),
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(4),
+        child: Stack(
+          children: [
+            // Fondo
+            Container(
+              width: double.infinity,
+              height: 8,
+              color: Colors.white.withValues(alpha: 0.3),
+            ),
+            // Barra de progreso con gradiente
+            Container(
+              width: (porcentaje / 100) * MediaQuery.of(context).size.width * 0.3, // Ajustar según el ancho disponible
+              height: 8,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.centerLeft,
+                  end: Alignment.centerRight,
+                  colors: gradientColors,
+                ),
+                borderRadius: BorderRadius.circular(4),
+                boxShadow: [
+                  BoxShadow(
+                    color: gradientColors.last.withValues(alpha: 0.3),
+                    blurRadius: 4,
+                    offset: const Offset(0, 1),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
