@@ -1,13 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/vehiculo.dart';
-import '../models/mantenimiento.dart';
 import '../viewmodels/vehiculo_viewmodel.dart';
 import '../theme/autocar_theme.dart';
 import '../widgets/background_widgets.dart';
-import '../database/database_helper.dart';
-import '../services/maintenance_service.dart';
-import '../services/vehicle_image_service.dart';
 import 'agregar_vehiculo_screen.dart';
 
 class PerfilScreen extends StatefulWidget {
@@ -18,8 +14,6 @@ class PerfilScreen extends StatefulWidget {
 }
 
 class _PerfilScreenState extends State<PerfilScreen> {
-  final DatabaseHelper _dbHelper = DatabaseHelper();
-
   @override
   Widget build(BuildContext context) {
     return BackgroundGradientWidget(
@@ -103,7 +97,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
           style: TextStyle(
             fontSize: 30,
             fontWeight: FontWeight.bold,
-            color: Colors.white.withValues(alpha: 0.9),
+            color: Colors.white.withOpacity(0.9),
             letterSpacing: 1.2,
           ),
         ),
@@ -112,7 +106,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
           'Gestiona tu información y vehículos',
           style: TextStyle(
             fontSize: 16,
-            color: Colors.white.withValues(alpha: 0.8),
+            color: Colors.white.withOpacity(0.8),
           ),
         ),
       ],
@@ -123,22 +117,22 @@ class _PerfilScreenState extends State<PerfilScreen> {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.12),
+        color: Colors.white.withOpacity(0.12),
         borderRadius: BorderRadius.circular(22),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.2),
+            color: Colors.black.withOpacity(0.2),
             blurRadius: 8,
             offset: const Offset(4, 4),
           ),
           BoxShadow(
-            color: Colors.white.withValues(alpha: 0.05),
+            color: Colors.white.withOpacity(0.05),
             blurRadius: 8,
             offset: const Offset(-4, -4),
           ),
         ],
         border: Border.all(
-          color: Colors.white.withValues(alpha: 0.15),
+          color: Colors.white.withOpacity(0.15),
           width: 1,
         ),
       ),
@@ -150,8 +144,8 @@ class _PerfilScreenState extends State<PerfilScreen> {
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  Colors.blueAccent.withValues(alpha: 0.8),
-                  Colors.purpleAccent.withValues(alpha: 0.6),
+                  Colors.blueAccent.withOpacity(0.8),
+                  Colors.purpleAccent.withOpacity(0.6),
                 ],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
@@ -159,7 +153,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
               borderRadius: BorderRadius.circular(20),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.2),
+                  color: Colors.black.withOpacity(0.2),
                   blurRadius: 8,
                   offset: const Offset(4, 4),
                 ),
@@ -188,7 +182,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
                 Text(
                   'usuario@autocar.com',
                   style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.8),
+                    color: Colors.white.withOpacity(0.8),
                     fontSize: 14,
                   ),
                 ),
@@ -198,7 +192,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                       decoration: BoxDecoration(
-                        color: Colors.greenAccent.withValues(alpha: 0.2),
+                        color: Colors.greenAccent.withOpacity(0.2),
                         borderRadius: BorderRadius.circular(20),
                         border: Border.all(color: Colors.greenAccent, width: 1),
                       ),
@@ -217,7 +211,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
                       child: Container(
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.1),
+                          color: Colors.white.withOpacity(0.1),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: const Icon(
@@ -238,215 +232,35 @@ class _PerfilScreenState extends State<PerfilScreen> {
   }
 
   Widget _buildControlGastosMejorado(VehiculoViewModel viewModel) {
-    return FutureBuilder<Map<String, dynamic>>(
-      future: _obtenerDatosGastos(viewModel),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  Colors.orangeAccent.withValues(alpha: 0.8),
-                  Colors.deepOrangeAccent.withValues(alpha: 0.6),
-                ],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius: BorderRadius.circular(22),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.2),
-                  blurRadius: 8,
-                  offset: const Offset(4, 4),
-                ),
-                BoxShadow(
-                  color: Colors.white.withValues(alpha: 0.05),
-                  blurRadius: 8,
-                  offset: const Offset(-4, -4),
-                ),
-              ],
-              border: Border.all(
-                color: Colors.white.withValues(alpha: 0.15),
-                width: 1,
-              ),
-            ),
-            child: const Center(
-              child: CircularProgressIndicator(color: Colors.white),
-            ),
-          );
-        }
-
-        if (snapshot.hasError) {
-          return Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: Colors.red.withValues(alpha: 0.2),
-              borderRadius: BorderRadius.circular(22),
-            ),
-            child: const Text(
-              'Error al cargar gastos',
-              style: TextStyle(color: Colors.white),
-            ),
-          );
-        }
-
-        final datos = snapshot.data!;
-        final gastosTotales = datos['total'] as double;
-        final gastosMes = datos['mes'] as double;
-        final gastosPorCategoria = datos['categorias'] as Map<String, double>;
-
-        return Container(
-          padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  Colors.orangeAccent.withValues(alpha: 0.8),
-                  Colors.deepOrangeAccent.withValues(alpha: 0.6),
-                ],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-            borderRadius: BorderRadius.circular(22),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.2),
-                blurRadius: 8,
-                offset: const Offset(4, 4),
-              ),
-              BoxShadow(
-                color: Colors.white.withValues(alpha: 0.05),
-                blurRadius: 8,
-                offset: const Offset(-4, -4),
-              ),
-            ],
-            border: Border.all(
-              color: Colors.white.withValues(alpha: 0.15),
-              width: 1,
-            ),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.2),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: const Icon(
-                      Icons.account_balance_wallet,
-                      color: Colors.white,
-                      size: 24,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  const Text(
-                    'Análisis de Gastos',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 20),
-              Row(
-                children: [
-                  Expanded(
-                    child: _buildGastoCard('Total', '\$${gastosTotales.toStringAsFixed(2)}', Icons.trending_up),
-                  ),
-                  const SizedBox(width: 15),
-                  Expanded(
-                    child: _buildGastoCard('Este Mes', '\$${gastosMes.toStringAsFixed(2)}', Icons.calendar_month),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 20),
-              if (gastosPorCategoria.isNotEmpty) ...[
-                const Text(
-                  'Gastos por Categoría',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 15),
-                ...gastosPorCategoria.entries.map((entry) => _buildCategoriaGastoCard(entry.key, entry.value, gastosTotales)),
-                const SizedBox(height: 20),
-              ],
-              Row(
-                children: [
-                  Expanded(
-                    child: ElevatedButton.icon(
-                      onPressed: _mostrarAgregarGasto,
-                      icon: const Icon(Icons.add, size: 18),
-                      label: const Text('Agregar Gasto'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white.withValues(alpha: 0.2),
-                        foregroundColor: Colors.white,
-                        elevation: 0,
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 15),
-                  Expanded(
-                    child: ElevatedButton.icon(
-                      onPressed: _mostrarHistorialGastos,
-                      icon: const Icon(Icons.history, size: 18),
-                      label: const Text('Historial'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white.withValues(alpha: 0.2),
-                        foregroundColor: Colors.white,
-                        elevation: 0,
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  Future<Map<String, dynamic>> _obtenerDatosGastos(VehiculoViewModel viewModel) async {
-    final gastosTotales = await _calcularGastosTotales(viewModel);
-    final gastosMes = await _calcularGastosMes(viewModel);
-    final gastosPorCategoria = await _calcularGastosPorCategoria(viewModel);
-    
-    return {
-      'total': gastosTotales,
-      'mes': gastosMes,
-      'categorias': gastosPorCategoria,
-    };
-  }
-
-  Widget _buildCategoriaGastoCard(String categoria, double gasto, double total) {
-    final porcentaje = total > 0 ? (gasto / total) * 100 : 0.0;
-    final nombreCategoria = MaintenanceService.getCategoryDisplayName(categoria);
+    final gastosTotales = _calcularGastosTotales(viewModel);
+    final gastosMes = _calcularGastosMes(viewModel);
     
     return Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      padding: const EdgeInsets.all(15),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.15),
-        borderRadius: BorderRadius.circular(15),
+        gradient: LinearGradient(
+          colors: [
+            Colors.tealAccent.withOpacity(0.8),
+            Colors.cyanAccent.withOpacity(0.6),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(22),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.2),
+            blurRadius: 8,
+            offset: const Offset(4, 4),
+          ),
+          BoxShadow(
+            color: Colors.white.withOpacity(0.05),
+            blurRadius: 8,
+            offset: const Offset(-4, -4),
+          ),
+        ],
         border: Border.all(
-          color: Colors.white.withValues(alpha: 0.2),
+          color: Colors.white.withOpacity(0.15),
           width: 1,
         ),
       ),
@@ -455,48 +269,75 @@ class _PerfilScreenState extends State<PerfilScreen> {
         children: [
           Row(
             children: [
-              Icon(
-                _getIconForCategory(categoria),
-                color: Colors.white,
-                size: 20,
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Text(
-                  nombreCategoria,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                  ),
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(
+                  Icons.account_balance_wallet,
+                  color: Colors.white,
+                  size: 24,
                 ),
               ),
-              Text(
-                '\$${gasto.toStringAsFixed(2)}',
-                style: const TextStyle(
+              const SizedBox(width: 12),
+              const Text(
+                'Control de Gastos',
+                style: TextStyle(
                   color: Colors.white,
-                  fontSize: 14,
+                  fontSize: 20,
                   fontWeight: FontWeight.bold,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 20),
           Row(
             children: [
               Expanded(
-                child: LinearProgressIndicator(
-                  value: porcentaje / 100,
-                  backgroundColor: Colors.white.withValues(alpha: 0.2),
-                  valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+                child: _buildGastoCard('Total', '\$${gastosTotales.toStringAsFixed(2)}', Icons.trending_up),
+              ),
+              const SizedBox(width: 15),
+              Expanded(
+                child: _buildGastoCard('Este Mes', '\$${gastosMes.toStringAsFixed(2)}', Icons.calendar_month),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          Row(
+            children: [
+              Expanded(
+                child: ElevatedButton.icon(
+                  onPressed: _mostrarAgregarGasto,
+                  icon: const Icon(Icons.add, size: 18),
+                  label: const Text('Agregar Gasto'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white.withOpacity(0.2),
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
                 ),
               ),
-              const SizedBox(width: 10),
-              Text(
-                '${porcentaje.toStringAsFixed(1)}%',
-                style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.8),
-                  fontSize: 12,
+              const SizedBox(width: 15),
+              Expanded(
+                child: ElevatedButton.icon(
+                  onPressed: _mostrarHistorialGastos,
+                  icon: const Icon(Icons.history, size: 18),
+                  label: const Text('Historial'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white.withOpacity(0.2),
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
                 ),
               ),
             ],
@@ -506,39 +347,14 @@ class _PerfilScreenState extends State<PerfilScreen> {
     );
   }
 
-  IconData _getIconForCategory(String categoria) {
-    switch (categoria) {
-      case 'oil':
-        return Icons.oil_barrel;
-      case 'brakes':
-        return Icons.stop_circle;
-      case 'battery':
-        return Icons.battery_charging_full;
-      case 'tires':
-        return Icons.directions_car;
-      case 'coolant':
-        return Icons.thermostat;
-      case 'airFilter':
-        return Icons.air;
-      case 'alignment':
-        return Icons.settings;
-      case 'chain':
-        return Icons.link;
-      case 'sparkPlug':
-        return Icons.flash_on;
-      default:
-        return Icons.build;
-    }
-  }
-
   Widget _buildGastoCard(String titulo, String valor, IconData icono) {
     return Container(
       padding: const EdgeInsets.all(15),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.15),
+        color: Colors.white.withOpacity(0.15),
         borderRadius: BorderRadius.circular(15),
         border: Border.all(
-          color: Colors.white.withValues(alpha: 0.2),
+          color: Colors.white.withOpacity(0.2),
           width: 1,
         ),
       ),
@@ -557,7 +373,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
           Text(
             titulo,
             style: TextStyle(
-              color: Colors.white.withValues(alpha: 0.8),
+              color: Colors.white.withOpacity(0.8),
               fontSize: 12,
             ),
           ),
@@ -570,22 +386,22 @@ class _PerfilScreenState extends State<PerfilScreen> {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.12),
+        color: Colors.white.withOpacity(0.12),
         borderRadius: BorderRadius.circular(22),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.2),
+            color: Colors.black.withOpacity(0.2),
             blurRadius: 8,
             offset: const Offset(4, 4),
           ),
           BoxShadow(
-            color: Colors.white.withValues(alpha: 0.05),
+            color: Colors.white.withOpacity(0.05),
             blurRadius: 8,
             offset: const Offset(-4, -4),
           ),
         ],
         border: Border.all(
-          color: Colors.white.withValues(alpha: 0.15),
+          color: Colors.white.withOpacity(0.15),
           width: 1,
         ),
       ),
@@ -597,7 +413,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.2),
+                  color: Colors.white.withOpacity(0.2),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: const Icon(
@@ -619,7 +435,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
               Text(
                 '${viewModel.vehiculos.length}',
                 style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.8),
+                  color: Colors.white.withOpacity(0.8),
                   fontSize: 16,
                   fontWeight: FontWeight.w500,
                 ),
@@ -643,7 +459,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
               icon: const Icon(Icons.add, size: 18),
               label: const Text('Agregar Vehículo'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.white.withValues(alpha: 0.2),
+                backgroundColor: Colors.white.withOpacity(0.2),
                 foregroundColor: Colors.white,
                 elevation: 0,
                 padding: const EdgeInsets.symmetric(vertical: 12),
@@ -663,10 +479,10 @@ class _PerfilScreenState extends State<PerfilScreen> {
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.all(15),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.1),
+        color: Colors.white.withOpacity(0.1),
         borderRadius: BorderRadius.circular(15),
         border: Border.all(
-          color: Colors.white.withValues(alpha: 0.2),
+          color: Colors.white.withOpacity(0.2),
           width: 1,
         ),
       ),
@@ -677,16 +493,18 @@ class _PerfilScreenState extends State<PerfilScreen> {
             height: 50,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(12),
-              color: Colors.white.withValues(alpha: 0.2),
+              color: Colors.white.withOpacity(0.2),
             ),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(12),
               child: Image.asset(
-                VehicleImageService.getVehicleImagePath(vehiculo.tipo),
+                vehiculo.tipo == 'carro'
+                    ? 'assets/images/vehicles/car_default.png'
+                    : 'assets/images/vehicles/motorcycle.png',
                 fit: BoxFit.cover,
                 errorBuilder: (context, error, stackTrace) {
                   return Icon(
-                    vehiculo.tipo.contains('moto') ? Icons.motorcycle : Icons.directions_car,
+                    vehiculo.tipo == 'carro' ? Icons.directions_car : Icons.motorcycle,
                     color: Colors.white,
                     size: 30,
                   );
@@ -707,59 +525,30 @@ class _PerfilScreenState extends State<PerfilScreen> {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                const SizedBox(height: 4),
                 Text(
-                  '${vehiculo.ano} • ${vehiculo.placa}',
+                  '${vehiculo.placa} • ${vehiculo.kilometraje} km',
                   style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.7),
+                    color: Colors.white.withOpacity(0.8),
                     fontSize: 14,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  '${vehiculo.kilometraje.toString()} km',
-                  style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.6),
-                    fontSize: 12,
                   ),
                 ),
               ],
             ),
           ),
-          PopupMenuButton<String>(
-            icon: Icon(
-              Icons.more_vert,
-              color: Colors.white.withValues(alpha: 0.7),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            decoration: BoxDecoration(
+              color: Colors.blueAccent.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(12),
             ),
-            onSelected: (value) {
-              if (value == 'edit') {
-                _mostrarEditarVehiculo(context, vehiculo);
-              } else if (value == 'delete') {
-                _mostrarConfirmarEliminarVehiculo(context, vehiculo);
-              }
-            },
-            itemBuilder: (context) => [
-              const PopupMenuItem(
-                value: 'edit',
-                child: Row(
-                  children: [
-                    Icon(Icons.edit, color: Colors.blue),
-                    SizedBox(width: 8),
-                    Text('Editar'),
-                  ],
-                ),
+            child: Text(
+              vehiculo.tipo == 'carro' ? 'Carro' : 'Moto',
+              style: const TextStyle(
+                color: Colors.blueAccent,
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
               ),
-              const PopupMenuItem(
-                value: 'delete',
-                child: Row(
-                  children: [
-                    Icon(Icons.delete, color: Colors.red),
-                    SizedBox(width: 8),
-                    Text('Eliminar'),
-                  ],
-                ),
-              ),
-            ],
+            ),
           ),
         ],
       ),
@@ -772,22 +561,22 @@ class _PerfilScreenState extends State<PerfilScreen> {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.12),
+        color: Colors.white.withOpacity(0.12),
         borderRadius: BorderRadius.circular(22),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.2),
+            color: Colors.black.withOpacity(0.2),
             blurRadius: 8,
             offset: const Offset(4, 4),
           ),
           BoxShadow(
-            color: Colors.white.withValues(alpha: 0.05),
+            color: Colors.white.withOpacity(0.05),
             blurRadius: 8,
             offset: const Offset(-4, -4),
           ),
         ],
         border: Border.all(
-          color: Colors.white.withValues(alpha: 0.15),
+          color: Colors.white.withOpacity(0.15),
           width: 1,
         ),
       ),
@@ -799,7 +588,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.2),
+                  color: Colors.white.withOpacity(0.2),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: const Icon(
@@ -840,10 +629,10 @@ class _PerfilScreenState extends State<PerfilScreen> {
     return Container(
       padding: const EdgeInsets.all(15),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.1),
+        color: Colors.white.withOpacity(0.1),
         borderRadius: BorderRadius.circular(15),
         border: Border.all(
-          color: Colors.white.withValues(alpha: 0.2),
+          color: Colors.white.withOpacity(0.2),
           width: 1,
         ),
       ),
@@ -862,7 +651,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
           Text(
             titulo,
             style: TextStyle(
-              color: Colors.white.withValues(alpha: 0.8),
+              color: Colors.white.withOpacity(0.8),
               fontSize: 12,
             ),
             textAlign: TextAlign.center,
@@ -876,22 +665,22 @@ class _PerfilScreenState extends State<PerfilScreen> {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.12),
+        color: Colors.white.withOpacity(0.12),
         borderRadius: BorderRadius.circular(22),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.2),
+            color: Colors.black.withOpacity(0.2),
             blurRadius: 8,
             offset: const Offset(4, 4),
           ),
           BoxShadow(
-            color: Colors.white.withValues(alpha: 0.05),
+            color: Colors.white.withOpacity(0.05),
             blurRadius: 8,
             offset: const Offset(-4, -4),
           ),
         ],
         border: Border.all(
-          color: Colors.white.withValues(alpha: 0.15),
+          color: Colors.white.withOpacity(0.15),
           width: 1,
         ),
       ),
@@ -903,7 +692,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.2),
+                  color: Colors.white.withOpacity(0.2),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: const Icon(
@@ -944,7 +733,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
     return Container(
       padding: const EdgeInsets.all(15),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.2),
+        color: color.withOpacity(0.2),
         borderRadius: BorderRadius.circular(15),
         border: Border.all(color: color, width: 1),
       ),
@@ -967,47 +756,14 @@ class _PerfilScreenState extends State<PerfilScreen> {
   }
 
   // Métodos auxiliares
-  Future<double> _calcularGastosTotales(VehiculoViewModel viewModel) async {
-    double total = 0.0;
-    for (final vehiculo in viewModel.vehiculos) {
-      final mantenimientos = await _dbHelper.getMantenimientosByVehiculo(vehiculo.id!);
-      total += mantenimientos
-          .where((m) => m.status == 'completed' && m.costo > 0)
-          .fold(0.0, (sum, m) => sum + m.costo);
-    }
-    return total;
+  double _calcularGastosTotales(VehiculoViewModel viewModel) {
+    // Simulación de gastos totales
+    return 1250.50;
   }
 
-  Future<double> _calcularGastosMes(VehiculoViewModel viewModel) async {
-    final now = DateTime.now();
-    final inicioMes = DateTime(now.year, now.month, 1);
-    double total = 0.0;
-    
-    for (final vehiculo in viewModel.vehiculos) {
-      final mantenimientos = await _dbHelper.getMantenimientosByVehiculo(vehiculo.id!);
-      total += mantenimientos
-          .where((m) => 
-              m.status == 'completed' && 
-              m.costo > 0 && 
-              m.fecha.isAfter(inicioMes))
-          .fold(0.0, (sum, m) => sum + m.costo);
-    }
-    return total;
-  }
-
-  Future<Map<String, double>> _calcularGastosPorCategoria(VehiculoViewModel viewModel) async {
-    final Map<String, double> gastosPorCategoria = {};
-    
-    for (final vehiculo in viewModel.vehiculos) {
-      final mantenimientos = await _dbHelper.getMantenimientosByVehiculo(vehiculo.id!);
-      
-      for (final mantenimiento in mantenimientos.where((m) => m.status == 'completed' && m.costo > 0)) {
-        final categoria = mantenimiento.tipo;
-        gastosPorCategoria[categoria] = (gastosPorCategoria[categoria] ?? 0.0) + mantenimiento.costo;
-      }
-    }
-    
-    return gastosPorCategoria;
+  double _calcularGastosMes(VehiculoViewModel viewModel) {
+    // Simulación de gastos del mes
+    return 285.75;
   }
 
   double _calcularKilometrajeTotal(VehiculoViewModel viewModel) {
@@ -1050,11 +806,13 @@ class _PerfilScreenState extends State<PerfilScreen> {
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(8),
                   child: Image.asset(
-                    VehicleImageService.getVehicleImagePath(vehiculo.tipo),
+                    vehiculo.tipo == 'carro'
+                        ? 'assets/images/vehicles/car_default.png'
+                        : 'assets/images/vehicles/motorcycle.png',
                     fit: BoxFit.cover,
                     errorBuilder: (context, error, stackTrace) {
                       return Icon(
-                        vehiculo.tipo.contains('moto') ? Icons.motorcycle : Icons.directions_car,
+                        vehiculo.tipo == 'carro' ? Icons.directions_car : Icons.motorcycle,
                         size: 30,
                         color: Colors.blue,
                       );
@@ -1227,212 +985,6 @@ class _PerfilScreenState extends State<PerfilScreen> {
           TextButton(
             onPressed: () => Navigator.pop(context),
             child: const Text('Cerrar', style: TextStyle(color: Colors.white70)),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _mostrarEditarVehiculo(BuildContext context, Vehiculo vehiculo) {
-    final marcaController = TextEditingController(text: vehiculo.marca);
-    final modeloController = TextEditingController(text: vehiculo.modelo);
-    final anoController = TextEditingController(text: vehiculo.ano.toString());
-    final placaController = TextEditingController(text: vehiculo.placa);
-    final kilometrajeController = TextEditingController(text: vehiculo.kilometraje.toString());
-    String tipoSeleccionado = VehicleImageService.getVehicleDisplayName(vehiculo.tipo);
-
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: AutocarTheme.darkBackground,
-        title: const Text('Editar Vehículo', style: TextStyle(color: Colors.white)),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              DropdownButtonFormField<String>(
-                value: tipoSeleccionado,
-                decoration: const InputDecoration(
-                  labelText: 'Tipo de Vehículo',
-                  labelStyle: TextStyle(color: Colors.white70),
-                  enabledBorder: UnderlineInputBorder(
-                    borderSide: BorderSide(color: Colors.white30),
-                  ),
-                  focusedBorder: UnderlineInputBorder(
-                    borderSide: BorderSide(color: Colors.white),
-                  ),
-                ),
-                dropdownColor: AutocarTheme.darkBackground,
-                style: const TextStyle(color: Colors.white),
-                items: VehicleImageService.getAvailableVehicleTypes().map((tipo) {
-                  return DropdownMenuItem(
-                    value: tipo,
-                    child: Text(tipo),
-                  );
-                }).toList(),
-                onChanged: (value) {
-                  tipoSeleccionado = value!;
-                },
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: marcaController,
-                decoration: const InputDecoration(
-                  labelText: 'Marca',
-                  labelStyle: TextStyle(color: Colors.white70),
-                  enabledBorder: UnderlineInputBorder(
-                    borderSide: BorderSide(color: Colors.white30),
-                  ),
-                  focusedBorder: UnderlineInputBorder(
-                    borderSide: BorderSide(color: Colors.white),
-                  ),
-                ),
-                style: const TextStyle(color: Colors.white),
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: modeloController,
-                decoration: const InputDecoration(
-                  labelText: 'Modelo',
-                  labelStyle: TextStyle(color: Colors.white70),
-                  enabledBorder: UnderlineInputBorder(
-                    borderSide: BorderSide(color: Colors.white30),
-                  ),
-                  focusedBorder: UnderlineInputBorder(
-                    borderSide: BorderSide(color: Colors.white),
-                  ),
-                ),
-                style: const TextStyle(color: Colors.white),
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: anoController,
-                decoration: const InputDecoration(
-                  labelText: 'Año',
-                  labelStyle: TextStyle(color: Colors.white70),
-                  enabledBorder: UnderlineInputBorder(
-                    borderSide: BorderSide(color: Colors.white30),
-                  ),
-                  focusedBorder: UnderlineInputBorder(
-                    borderSide: BorderSide(color: Colors.white),
-                  ),
-                ),
-                style: const TextStyle(color: Colors.white),
-                keyboardType: TextInputType.number,
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: placaController,
-                decoration: const InputDecoration(
-                  labelText: 'Placa',
-                  labelStyle: TextStyle(color: Colors.white70),
-                  enabledBorder: UnderlineInputBorder(
-                    borderSide: BorderSide(color: Colors.white30),
-                  ),
-                  focusedBorder: UnderlineInputBorder(
-                    borderSide: BorderSide(color: Colors.white),
-                  ),
-                ),
-                style: const TextStyle(color: Colors.white),
-                textCapitalization: TextCapitalization.characters,
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: kilometrajeController,
-                decoration: const InputDecoration(
-                  labelText: 'Kilometraje',
-                  labelStyle: TextStyle(color: Colors.white70),
-                  enabledBorder: UnderlineInputBorder(
-                    borderSide: BorderSide(color: Colors.white30),
-                  ),
-                  focusedBorder: UnderlineInputBorder(
-                    borderSide: BorderSide(color: Colors.white),
-                  ),
-                ),
-                style: const TextStyle(color: Colors.white),
-                keyboardType: TextInputType.number,
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancelar', style: TextStyle(color: Colors.white70)),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              if (marcaController.text.isNotEmpty &&
-                  modeloController.text.isNotEmpty &&
-                  anoController.text.isNotEmpty &&
-                  placaController.text.isNotEmpty &&
-                  kilometrajeController.text.isNotEmpty) {
-                
-                final viewModel = context.read<VehiculoViewModel>();
-                final vehiculoActualizado = vehiculo.copyWith(
-                  marca: marcaController.text.trim(),
-                  modelo: modeloController.text.trim(),
-                  ano: int.parse(anoController.text.trim()),
-                  placa: placaController.text.trim().toUpperCase(),
-                  tipo: VehicleImageService.getVehicleTypeForImage(tipoSeleccionado),
-                  kilometraje: int.parse(kilometrajeController.text.trim()),
-                );
-
-                await viewModel.actualizarVehiculo(vehiculoActualizado);
-                Navigator.pop(context);
-                
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Vehículo actualizado exitosamente'),
-                    backgroundColor: Colors.green,
-                  ),
-                );
-              }
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFFF6B35),
-              foregroundColor: Colors.white,
-            ),
-            child: const Text('Guardar'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _mostrarConfirmarEliminarVehiculo(BuildContext context, Vehiculo vehiculo) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: AutocarTheme.darkBackground,
-        title: const Text('Eliminar Vehículo', style: TextStyle(color: Colors.white)),
-        content: Text(
-          '¿Estás seguro de que quieres eliminar ${vehiculo.marca} ${vehiculo.modelo}? Esta acción no se puede deshacer.',
-          style: const TextStyle(color: Colors.white70),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancelar', style: TextStyle(color: Colors.white70)),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              final viewModel = context.read<VehiculoViewModel>();
-              await viewModel.eliminarVehiculo(vehiculo.id!);
-              Navigator.pop(context);
-              
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Vehículo eliminado exitosamente'),
-                  backgroundColor: Colors.red,
-                ),
-              );
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-              foregroundColor: Colors.white,
-            ),
-            child: const Text('Eliminar'),
           ),
         ],
       ),

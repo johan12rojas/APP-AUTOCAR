@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/vehiculo.dart';
 import '../models/mantenimiento.dart';
 import '../database/database_helper.dart';
-import 'add_mantenimiento_screen.dart';
+import 'agendar_mantenimiento_screen.dart';
 import 'mantenimiento_detail_screen.dart';
 
 class VehiculoDetailScreen extends StatefulWidget {
@@ -76,7 +76,7 @@ class _VehiculoDetailScreenState extends State<VehiculoDetailScreen> {
                   ),
                   const SizedBox(height: 16),
                   _buildInfoRow('Placa', widget.vehiculo.placa),
-                  _buildInfoRow('Color', widget.vehiculo.color),
+                  _buildInfoRow('Tipo', widget.vehiculo.tipo.toUpperCase()),
                   _buildInfoRow('Kilometraje', '${widget.vehiculo.kilometraje} km'),
                 ],
               ),
@@ -133,7 +133,7 @@ class _VehiculoDetailScreenState extends State<VehiculoDetailScreen> {
                               subtitle: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(mantenimiento.descripcion),
+                                  Text(mantenimiento.notas),
                                   Text(
                                     'Fecha: ${_formatDate(mantenimiento.fecha)}',
                                     style: const TextStyle(fontSize: 12),
@@ -173,7 +173,7 @@ class _VehiculoDetailScreenState extends State<VehiculoDetailScreen> {
           await Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => AddMantenimientoScreen(vehiculo: widget.vehiculo),
+                  builder: (context) => AgendarMantenimientoScreen(vehiculo: widget.vehiculo),
             ),
           );
           _loadMantenimientos();
@@ -205,3 +205,4 @@ class _VehiculoDetailScreenState extends State<VehiculoDetailScreen> {
     return '${date.day}/${date.month}/${date.year}';
   }
 }
+

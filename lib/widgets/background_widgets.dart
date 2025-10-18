@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../theme/autocar_theme.dart';
 
-/// Widget para fondo con degradado azul bonito
+/// Widget para fondo con degradado azul sutil
 class BackgroundGradientWidget extends StatelessWidget {
   final Widget child;
   final bool showPattern;
@@ -9,27 +9,25 @@ class BackgroundGradientWidget extends StatelessWidget {
   const BackgroundGradientWidget({
     super.key,
     required this.child,
-    this.showPattern = true,
+    this.showPattern = false,
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
           colors: [
-            const Color(0xFF0F172A), // Azul muy oscuro
-            const Color(0xFF1E293B), // Azul oscuro
-            const Color(0xFF334155), // Azul medio
-            const Color(0xFF1E293B), // Azul oscuro
-            const Color(0xFF0F172A), // Azul muy oscuro
+            Color(0xFF1E3A8A), // Azul principal
+            Color(0xFF3B82F6), // Azul medio
+            Color(0xFF1E40AF), // Azul oscuro
           ],
-          stops: const [0.0, 0.3, 0.5, 0.7, 1.0],
+          stops: [0.0, 0.5, 1.0],
         ),
       ),
-      child: showPattern ? DottedBackgroundWidget(child: child) : child,
+      child: child,
     );
   }
 }

@@ -1,154 +1,83 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../models/vehiculo.dart';
-import '../database/database_helper.dart';
+import '../viewmodels/vehiculo_viewmodel.dart';
+import '../services/maintenance_service.dart';
+import '../services/vehicle_image_service.dart';
+import '../theme/autocar_theme.dart';
+import '../widgets/background_widgets.dart';
 
-class AlertasScreen extends StatefulWidget {
+class AlertasScreen extends StatelessWidget {
   const AlertasScreen({super.key});
-
-  @override
-  State<AlertasScreen> createState() => _AlertasScreenState();
-}
-
-class _AlertasScreenState extends State<AlertasScreen> {
-  final DatabaseHelper _dbHelper = DatabaseHelper();
-  List<Map<String, dynamic>> _alertas = [];
-  Vehiculo? _vehiculoActual;
-  bool _isLoading = true;
-
-  @override
-  void initState() {
-    super.initState();
-    _cargarAlertas();
-  }
-
-  Future<void> _cargarAlertas() async {
-    setState(() {
-      _isLoading = true;
-    });
-
-    try {
-      final vehiculos = await _dbHelper.getVehiculos();
-      if (vehiculos.isNotEmpty) {
-        _vehiculoActual = vehiculos.first;
-        await _generarAlertas();
-      }
-    } finally {
-      setState(() {
-        _isLoading = false;
-      });
-    }
-  }
-
-  Future<void> _generarAlertas() async {
-    if (_vehiculoActual == null) return;
-
-    final alertas = <Map<String, dynamic>>[];
-
-    // Alerta por kilometraje próximo a mantenimiento
-    if (_vehiculoActual!.kmProximoMantenimiento > 0) {
-      final kmRestantes = _vehiculoActual!.kmProximoMantenimiento - _vehiculoActual!.kilometraje;
-      if (kmRestantes <= 1000 && kmRestantes > 0) {
-        alertas.add({
-          'tipo': 'mantenimiento',
-          'titulo': 'Mantenimiento Próximo',
-          'descripcion': '${_vehiculoActual!.proximoMantenimiento} en $kmRestantes km',
-          'prioridad': kmRestantes <= 500 ? 'alta' : 'media',
-          'icono': Icons.build,
-          'color': kmRestantes <= 500 ? Colors.red : Colors.orange,
-        });
-      }
-    }
-
-    // Alertas por estado de componentes
-    if (_vehiculoActual!.estadoAceite <= 20) {
-      alertas.add({
-        'tipo': 'componente',
-        'titulo': 'Aceite de Motor',
-        'descripcion': 'Estado crítico: ${_vehiculoActual!.estadoAceite}%',
-        'prioridad': 'alta',
-        'icono': Icons.oil_barrel,
-        'color': Colors.red,
-      });
-    } else if (_vehiculoActual!.estadoAceite <= 40) {
-      alertas.add({
-        'tipo': 'componente',
-        'titulo': 'Aceite de Motor',
-        'descripcion': 'Estado bajo: ${_vehiculoActual!.estadoAceite}%',
-        'prioridad': 'media',
-        'icono': Icons.oil_barrel,
-        'color': Colors.orange,
-      });
-    }
-
-    if (_vehiculoActual!.estadoLlantas <= 20) {
-      alertas.add({
-        'tipo': 'componente',
-        'titulo': 'Llantas',
-        'descripcion': 'Estado crítico: ${_vehiculoActual!.estadoLlantas}%',
-        'prioridad': 'alta',
-        'icono': Icons.directions_car,
-        'color': Colors.red,
-      });
-    } else if (_vehiculoActual!.estadoLlantas <= 40) {
-      alertas.add({
-        'tipo': 'componente',
-        'titulo': 'Llantas',
-        'descripcion': 'Estado bajo: ${_vehiculoActual!.estadoLlantas}%',
-        'prioridad': 'media',
-        'icono': Icons.directions_car,
-        'color': Colors.orange,
-      });
-    }
-
-    if (_vehiculoActual!.estadoFrenos <= 20) {
-      alertas.add({
-        'tipo': 'componente',
-        'titulo': 'Frenos',
-        'descripcion': 'Estado crítico: ${_vehiculoActual!.estadoFrenos}%',
-        'prioridad': 'alta',
-        'icono': Icons.stop_circle,
-        'color': Colors.red,
-      });
-    } else if (_vehiculoActual!.estadoFrenos <= 40) {
-      alertas.add({
-        'tipo': 'componente',
-        'titulo': 'Frenos',
-        'descripcion': 'Estado bajo: ${_vehiculoActual!.estadoFrenos}%',
-        'prioridad': 'media',
-        'icono': Icons.stop_circle,
-        'color': Colors.orange,
-      });
-    }
-
-    if (_vehiculoActual!.estadoBateria <= 20) {
-      alertas.add({
-        'tipo': 'componente',
-        'titulo': 'Batería',
-        'descripcion': 'Estado crítico: ${_vehiculoActual!.estadoBateria}%',
-        'prioridad': 'alta',
-        'icono': Icons.battery_charging_full,
-        'color': Colors.red,
-      });
-    } else if (_vehiculoActual!.estadoBateria <= 40) {
-      alertas.add({
-        'tipo': 'componente',
-        'titulo': 'Batería',
-        'descripcion': 'Estado bajo: ${_vehiculoActual!.estadoBateria}%',
-        'prioridad': 'media',
-        'icono': Icons.battery_charging_full,
-        'color': Colors.orange,
-      });
-    }
-
-    setState(() {
-      _alertas = alertas;
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF1E3A8A), // Azul oscuro
+      backgroundColor: AutocarTheme.darkBackground,
+      body: BackgroundGradientWidget(
+        child: SafeArea(
+          child: Consumer<VehiculoViewModel>(
+            builder: (context, viewModel, child) {
+              if (viewModel.isLoading && viewModel.vehiculos.isEmpty) {
+                return const Center(
+                  child: CircularProgressIndicator(
+                    color: AutocarTheme.accentOrange,
+                  ),
+                );
+              }
+
+              if (viewModel.vehiculos.isEmpty) {
+                return _buildSinVehiculos(context);
+              }
+
+              return _buildConVehiculos(context, viewModel);
+            },
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSinVehiculos(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.notifications_off,
+              size: 80,
+              color: Colors.white.withOpacity(0.5),
+            ),
+            const SizedBox(height: 20),
+            Text(
+              'No hay alertas',
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 10),
+            Text(
+              'Agrega un vehículo para recibir alertas de mantenimiento',
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: Colors.white.withOpacity(0.7),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildConVehiculos(BuildContext context, VehiculoViewModel viewModel) {
+    final alertasCriticas = viewModel.alertasCriticas;
+    final alertasNormales = _generarAlertasNormales(viewModel);
+
+    return Scaffold(
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -157,229 +86,161 @@ class _AlertasScreenState extends State<AlertasScreen> {
           style: TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.bold,
+            fontSize: 24,
           ),
         ),
         actions: [
-          IconButton(
-            onPressed: _cargarAlertas,
-            icon: const Icon(
-              Icons.refresh,
-              color: Colors.white,
-            ),
-          ),
-        ],
-      ),
-      body: _isLoading
-          ? const Center(
-              child: CircularProgressIndicator(
+          if (viewModel.vehiculos.length > 1)
+            IconButton(
+              onPressed: () => _mostrarSelectorVehiculos(context, viewModel),
+              icon: const Icon(
+                Icons.swap_horiz,
                 color: Colors.white,
               ),
-            )
-          : _vehiculoActual == null
-              ? _buildSinVehiculo()
-              : _buildAlertas(),
-    );
-  }
-
-  Widget _buildSinVehiculo() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Icon(
-            Icons.notifications_off,
-            size: 100,
-            color: Colors.white70,
-          ),
-          const SizedBox(height: 20),
-          const Text(
-            'No hay vehículos registrados',
-            style: TextStyle(
-              color: Colors.white70,
-              fontSize: 18,
-              fontWeight: FontWeight.w500,
             ),
-          ),
-          const SizedBox(height: 10),
-          const Text(
-            'Agrega un vehículo para recibir alertas',
-            style: TextStyle(
-              color: Colors.white54,
-              fontSize: 14,
-            ),
-          ),
         ],
       ),
-    );
-  }
-
-  Widget _buildAlertas() {
-    if (_alertas.isEmpty) {
-      return Center(
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(20),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Icon(
-              Icons.check_circle,
-              size: 100,
-              color: Color(0xFF32CD32),
-            ),
-            const SizedBox(height: 20),
-            const Text(
-              '¡Todo en orden!',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 10),
-            const Text(
-              'No hay alertas pendientes',
-              style: TextStyle(
-                color: Colors.white70,
-                fontSize: 14,
-              ),
-            ),
-          ],
-        ),
-      );
-    }
-
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildResumenAlertas(),
-          const SizedBox(height: 30),
-          _buildListaAlertas(),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildResumenAlertas() {
-    final alertasAltas = _alertas.where((a) => a['prioridad'] == 'alta').length;
-    final alertasMedias = _alertas.where((a) => a['prioridad'] == 'media').length;
-
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: const Color(0xFF3B82F6), // Azul claro
-        borderRadius: BorderRadius.circular(15),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Resumen de Alertas',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 15),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _buildStatItem(
-                'Críticas',
-                alertasAltas.toString(),
-                Colors.red,
+            _buildHeaderMejorado(viewModel.vehiculoActual!, alertasCriticas.length, alertasNormales.length),
+            const SizedBox(height: 25),
+            
+            if (alertasCriticas.isNotEmpty) ...[
+              _buildSeccionAlertas(
+                context,
+                'Alertas Críticas',
+                alertasCriticas,
+                Colors.redAccent,
                 Icons.warning,
               ),
-              _buildStatItem(
-                'Advertencias',
-                alertasMedias.toString(),
-                Colors.orange,
+              const SizedBox(height: 25),
+            ],
+            
+            if (alertasNormales.isNotEmpty) ...[
+              _buildSeccionAlertas(
+                context,
+                'Alertas Preventivas',
+                alertasNormales,
+                Colors.orangeAccent,
                 Icons.info,
               ),
-              _buildStatItem(
-                'Total',
-                _alertas.length.toString(),
-                Colors.white70,
-                Icons.notifications,
-              ),
             ],
-          ),
-        ],
+            
+            if (alertasCriticas.isEmpty && alertasNormales.isEmpty) ...[
+              _buildSinAlertas(context),
+            ],
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildStatItem(String label, String value, Color color, IconData icon) {
-    return Column(
-      children: [
-        Icon(
-          icon,
-          color: color,
-          size: 24,
-        ),
-        const SizedBox(height: 5),
-        Text(
-          value,
-          style: TextStyle(
-            color: color,
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        Text(
-          label,
-          style: const TextStyle(
-            color: Colors.white70,
-            fontSize: 12,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildListaAlertas() {
+  Widget _buildHeaderMejorado(Vehiculo vehiculo, int criticas, int normales) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Alertas Activas',
+        Text(
+          'Alertas',
           style: TextStyle(
-            color: Colors.white,
-            fontSize: 18,
+            fontSize: 30,
             fontWeight: FontWeight.bold,
+            color: Colors.white.withOpacity(0.9),
+            letterSpacing: 1.2,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          '${criticas} críticas • ${normales} preventivas',
+          style: TextStyle(
+            fontSize: 16,
+            color: Colors.white.withOpacity(0.8),
           ),
         ),
         const SizedBox(height: 15),
-        ..._alertas.map((alerta) => _buildAlertaCard(alerta)),
+        Container(
+          padding: const EdgeInsets.all(15),
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.12),
+            borderRadius: BorderRadius.circular(15),
+            border: Border.all(
+              color: Colors.white.withOpacity(0.15),
+              width: 1,
+            ),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 50,
+                height: 50,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  color: Colors.white.withOpacity(0.2),
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: Image.asset(
+                    VehicleImageService.getVehicleImagePath(vehiculo.tipo),
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Icon(
+                        vehiculo.tipo.contains('moto') ? Icons.motorcycle : Icons.directions_car,
+                        color: Colors.white,
+                        size: 30,
+                      );
+                    },
+                  ),
+                ),
+              ),
+              const SizedBox(width: 15),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '${vehiculo.marca} ${vehiculo.modelo}',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Text(
+                      '${vehiculo.placa} • ${vehiculo.kilometraje} km',
+                      style: TextStyle(
+                        color: Colors.white.withOpacity(0.8),
+                        fontSize: 14,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
       ],
     );
   }
 
-  Widget _buildAlertaCard(Map<String, dynamic> alerta) {
+  Widget _buildHeader(BuildContext context, VehiculoViewModel viewModel) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 15),
-      padding: const EdgeInsets.all(15),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: (alerta['color'] as Color).withValues(alpha: 0.3),
-          width: 1,
-        ),
-      ),
+      padding: const EdgeInsets.all(20),
       child: Row(
         children: [
           Container(
-            padding: const EdgeInsets.all(10),
+            width: 50,
+            height: 50,
             decoration: BoxDecoration(
-              color: alerta['color'].withOpacity(0.2),
-              borderRadius: BorderRadius.circular(10),
+              gradient: AutocarTheme.accentGradient,
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: AutocarTheme.buttonShadow,
             ),
-            child: Icon(
-              alerta['icono'],
-              color: alerta['color'],
-              size: 24,
+            child: const Icon(
+              Icons.notifications,
+              color: Colors.white,
+              size: 28,
             ),
           ),
           const SizedBox(width: 15),
@@ -387,54 +248,203 @@ class _AlertasScreenState extends State<AlertasScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        alerta['titulo'],
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: alerta['color'],
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Text(
-                        alerta['prioridad'].toUpperCase(),
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 5),
                 Text(
-                  alerta['descripcion'],
-                  style: const TextStyle(
-                    color: Colors.white70,
-                    fontSize: 14,
+                  'Alertas',
+                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                Text(
+                  'Mantenimiento de vehículos',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: Colors.white.withOpacity(0.7),
                   ),
                 ),
               ],
             ),
           ),
-          const SizedBox(width: 10),
-          IconButton(
-            onPressed: () {
-              _mostrarAccionesAlerta(alerta);
-            },
-            icon: const Icon(
-              Icons.more_vert,
-              color: Colors.white70,
+          if (viewModel.vehiculos.length > 1)
+            IconButton(
+              onPressed: () => _mostrarSelectorVehiculos(context, viewModel),
+              icon: const Icon(
+                Icons.swap_horiz,
+                color: Colors.white,
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSeccionAlertas(
+    BuildContext context,
+    String titulo,
+    List<MapEntry<String, dynamic>> alertas,
+    Color colorPrincipal,
+    IconData iconoPrincipal,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: colorPrincipal.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(
+                iconoPrincipal,
+                color: colorPrincipal,
+                size: 20,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Text(
+              titulo,
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Colors.white.withOpacity(0.9),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: colorPrincipal.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Text(
+                '${alertas.length}',
+                style: TextStyle(
+                  color: colorPrincipal,
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 15),
+        ...alertas.map((alerta) => _buildAlertaCardMejorada(context, alerta, colorPrincipal)),
+      ],
+    );
+  }
+
+  Widget _buildAlertaCardMejorada(BuildContext context, MapEntry<String, dynamic> alerta, Color colorPrincipal) {
+    final categoria = alerta.key;
+    final datos = alerta.value;
+    final porcentaje = datos.percentage.round();
+    
+    return Container(
+      margin: const EdgeInsets.only(bottom: 15),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.12),
+        borderRadius: BorderRadius.circular(22),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.2),
+            blurRadius: 8,
+            offset: const Offset(4, 4),
+          ),
+          BoxShadow(
+            color: Colors.white.withOpacity(0.05),
+            blurRadius: 8,
+            offset: const Offset(-4, -4),
+          ),
+        ],
+        border: Border.all(
+          color: colorPrincipal.withOpacity(0.6),
+          width: 2,
+        ),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 60,
+            height: 60,
+            decoration: BoxDecoration(
+              color: colorPrincipal.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(15),
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(15),
+              child: Image.asset(
+                _getMaintenanceIconPath(categoria),
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) {
+                  return Icon(
+                    _getMaintenanceIconData(categoria),
+                    color: colorPrincipal,
+                    size: 30,
+                  );
+                },
+              ),
+            ),
+          ),
+          const SizedBox(width: 15),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  MaintenanceService.getCategoryDisplayName(categoria),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Container(
+                      width: 8,
+                      height: 8,
+                      decoration: BoxDecoration(
+                        color: colorPrincipal,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Estado: $porcentaje%',
+                      style: TextStyle(
+                        color: Colors.white.withOpacity(0.8),
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                LinearProgressIndicator(
+                  value: porcentaje / 100,
+                  backgroundColor: Colors.white.withOpacity(0.2),
+                  valueColor: AlwaysStoppedAnimation<Color>(colorPrincipal),
+                  minHeight: 6,
+                ),
+              ],
+            ),
+          ),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              color: colorPrincipal.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: colorPrincipal, width: 1),
+            ),
+            child: Text(
+              porcentaje < 20 ? 'Crítico' : 'Bajo',
+              style: TextStyle(
+                color: colorPrincipal,
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
         ],
@@ -442,63 +452,276 @@ class _AlertasScreenState extends State<AlertasScreen> {
     );
   }
 
-  void _mostrarAccionesAlerta(Map<String, dynamic> alerta) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: const Color(0xFF1E3A8A),
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+  String _getMaintenanceIconPath(String categoria) {
+    switch (categoria) {
+      case 'oil': return 'assets/images/maintenance/oil_change.png';
+      case 'tires': return 'assets/images/maintenance/tire_rotation.png';
+      case 'brakes': return 'assets/images/maintenance/brake_service.png';
+      case 'battery': return 'assets/images/maintenance/battery_check.png';
+      case 'engine': return 'assets/images/maintenance/engine_service.png';
+      case 'transmission': return 'assets/images/maintenance/transmission.png';
+      case 'air_filter': return 'assets/images/maintenance/air_filter.png';
+      case 'spark_plugs': return 'assets/images/maintenance/spark_plugs.png';
+      default: return 'assets/images/maintenance/oil_change.png';
+    }
+  }
+
+  IconData _getMaintenanceIconData(String categoria) {
+    switch (categoria) {
+      case 'oil': return Icons.local_gas_station;
+      case 'tires': return Icons.tire_repair;
+      case 'brakes': return Icons.car_repair;
+      case 'battery': return Icons.battery_alert;
+      default: return Icons.build;
+    }
+  }
+
+  Widget _buildAlertaCard(BuildContext context, MapEntry<String, dynamic> alerta, Color color) {
+    final categoria = alerta.key;
+    final data = alerta.value;
+    final porcentaje = data.percentage;
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: color.withOpacity(0.3),
+          width: 1,
+        ),
       ),
-      builder: (context) => Container(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              alerta['titulo'],
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 18,
+      child: Row(
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(
+              _getIconData(MaintenanceService.getMaintenanceIcon(categoria)),
+              color: color,
+              size: 20,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  MaintenanceService.getCategoryDisplayName(categoria),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  _getAlertaDescripcion(categoria, porcentaje, data),
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.8),
+                    fontSize: 14,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Text(
+              '${porcentaje.toStringAsFixed(0)}%',
+              style: TextStyle(
+                color: color,
+                fontSize: 12,
                 fontWeight: FontWeight.bold,
               ),
             ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSinAlertas(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(40),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(
+          color: Colors.white.withOpacity(0.15),
+          width: 1,
+        ),
+      ),
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Colors.greenAccent.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(50),
+            ),
+            child: const Icon(
+              Icons.check_circle,
+              color: Colors.greenAccent,
+              size: 60,
+            ),
+          ),
+          const SizedBox(height: 20),
+          Text(
+            '¡Todo en orden!',
+            style: TextStyle(
+              color: Colors.white.withOpacity(0.9),
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'No hay alertas pendientes para este vehículo',
+            style: TextStyle(
+              color: Colors.white.withOpacity(0.7),
+              fontSize: 16,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+
+  List<MapEntry<String, dynamic>> _generarAlertasNormales(VehiculoViewModel viewModel) {
+    final vehiculo = viewModel.vehiculoActual;
+    if (vehiculo == null) return [];
+
+    final alertas = <MapEntry<String, dynamic>>[];
+    final maintenanceData = vehiculo.maintenance;
+
+    for (final entry in maintenanceData.entries) {
+      final categoria = entry.key;
+      final data = entry.value;
+      final porcentaje = data.percentage;
+
+      // Alertas normales (no críticas)
+      if (porcentaje <= 60 && porcentaje > 10) {
+        alertas.add(MapEntry(categoria, data));
+      }
+    }
+
+    return alertas;
+  }
+
+  String _getAlertaDescripcion(String categoria, double porcentaje, dynamic data) {
+    if (porcentaje <= 10) {
+      return 'Mantenimiento crítico requerido';
+    } else if (porcentaje <= 30) {
+      return 'Mantenimiento urgente necesario';
+    } else if (porcentaje <= 60) {
+      return 'Programar mantenimiento pronto';
+    } else {
+      return 'Estado normal';
+    }
+  }
+
+  void _mostrarSelectorVehiculos(BuildContext context, VehiculoViewModel viewModel) {
+    if (viewModel.vehiculos.length <= 1) return;
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        decoration: const BoxDecoration(
+          color: AutocarTheme.darkBackground,
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(20),
+            topRight: Radius.circular(20),
+          ),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(20),
+              child: Text(
+                'Seleccionar Vehículo',
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                  color: AutocarTheme.textPrimary,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            ...viewModel.vehiculos.map((vehiculo) => ListTile(
+              leading: Container(
+                width: 50,
+                height: 50,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(8),
+                  color: Colors.grey[200],
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: Image.asset(
+                    VehicleImageService.getVehicleImagePath(vehiculo.tipo),
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Icon(
+                        vehiculo.tipo.contains('moto') ? Icons.motorcycle : Icons.directions_car,
+                        size: 30,
+                        color: Colors.blue,
+                      );
+                    },
+                  ),
+                ),
+              ),
+              title: Text(
+                '${vehiculo.marca} ${vehiculo.modelo}',
+                style: const TextStyle(
+                  color: AutocarTheme.textPrimary,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              subtitle: Text(
+                '${vehiculo.placa} • ${vehiculo.kilometraje} km',
+                style: const TextStyle(color: AutocarTheme.textSecondary),
+              ),
+              trailing: vehiculo.id == viewModel.vehiculoActual?.id
+                  ? const Icon(Icons.check, color: AutocarTheme.accentOrange)
+                  : null,
+              onTap: () {
+                viewModel.cambiarVehiculoActual(vehiculo);
+                Navigator.pop(context);
+              },
+            )).toList(),
             const SizedBox(height: 20),
-            ListTile(
-              leading: const Icon(Icons.build, color: Color(0xFFFF6B35)),
-              title: const Text(
-                'Agendar Mantenimiento',
-                style: TextStyle(color: Colors.white),
-              ),
-              onTap: () {
-                Navigator.pop(context);
-                // TODO: Navegar a agendar mantenimiento
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.edit, color: Colors.white70),
-              title: const Text(
-                'Actualizar Estado',
-                style: TextStyle(color: Colors.white),
-              ),
-              onTap: () {
-                Navigator.pop(context);
-                // TODO: Actualizar estado del componente
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.check_circle_outline, color: Colors.white70),
-              title: const Text(
-                'Marcar como Resuelto',
-                style: TextStyle(color: Colors.white),
-              ),
-              onTap: () {
-                Navigator.pop(context);
-                // TODO: Marcar alerta como resuelta
-              },
-            ),
           ],
         ),
       ),
     );
+  }
+
+  IconData _getIconData(String iconName) {
+    switch (iconName) {
+      case 'oil_barrel': return Icons.oil_barrel;
+      case 'directions_car': return Icons.directions_car;
+      case 'tire_repair': return Icons.tire_repair;
+      case 'disc_full': return Icons.disc_full;
+      case 'battery_charging_full': return Icons.battery_charging_full;
+      case 'ac_unit': return Icons.ac_unit;
+      case 'filter_alt': return Icons.filter_alt;
+      case 'settings_ethernet': return Icons.settings_ethernet;
+      case 'link': return Icons.link;
+      case 'electrical_services': return Icons.electrical_services;
+      default: return Icons.build;
+    }
   }
 }

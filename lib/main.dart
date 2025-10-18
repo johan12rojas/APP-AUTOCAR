@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'screens/main_navigation_screen.dart';
+import 'package:provider/provider.dart';
+import 'screens/splash_screen.dart';
 import 'utils/data_seeder.dart';
 import 'theme/autocar_theme.dart';
+import 'viewmodels/vehiculo_viewmodel.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -24,11 +26,14 @@ class AUTOCARApp extends StatelessWidget {
       ),
     );
 
-    return MaterialApp(
-      title: 'AUTOCAR - Bitácora de Mantenimiento',
-      theme: AutocarTheme.darkTheme,
-      home: const MainNavigationScreen(),
-      debugShowCheckedModeBanner: false,
+    return ChangeNotifierProvider(
+      create: (context) => VehiculoViewModel(),
+      child: MaterialApp(
+        title: 'AUTOCAR - Bitácora de Mantenimiento',
+        theme: AutocarTheme.darkTheme,
+        home: const SplashScreen(),
+        debugShowCheckedModeBanner: false,
+      ),
     );
   }
 }

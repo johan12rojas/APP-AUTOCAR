@@ -122,12 +122,12 @@ class _MantenimientoDetailScreenState extends State<MantenimientoDetailScreen> {
                     const SizedBox(height: 16),
                     _buildDetailRow('Fecha', DateFormat('dd/MM/yyyy').format(widget.mantenimiento.fecha)),
                     _buildDetailRow('Tipo', widget.mantenimiento.tipo),
-                    _buildDetailRow('Descripción', widget.mantenimiento.descripcion),
+                    _buildDetailRow('Descripción', widget.mantenimiento.notas),
                     _buildDetailRow('Costo', '\$${widget.mantenimiento.costo.toStringAsFixed(2)}'),
                     _buildDetailRow('Kilometraje', '${widget.mantenimiento.kilometraje} km'),
-                    _buildDetailRow('Taller/Servicio', widget.mantenimiento.taller),
-                    if (widget.mantenimiento.notas != null && widget.mantenimiento.notas!.isNotEmpty)
-                      _buildDetailRow('Notas', widget.mantenimiento.notas!),
+                    _buildDetailRow('Taller/Servicio', widget.mantenimiento.ubicacion),
+                    if (widget.mantenimiento.notas.isNotEmpty)
+                      _buildDetailRow('Notas', widget.mantenimiento.notas),
                   ],
                 ),
               ),

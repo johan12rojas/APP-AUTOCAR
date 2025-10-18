@@ -18,9 +18,9 @@ class AutocarTheme {
   static const Color infoBlue = Color(0xFF3B82F6);         // Azul información
   
   // Colores de fondo
-  static const Color darkBackground = Color(0xFF0F172A);  // Fondo oscuro profundo
-  static const Color cardBackground = Color(0xFF1E293B);  // Fondo de cards
-  static const Color surfaceBackground = Color(0xFF334155); // Fondo de superficie
+  static const Color darkBackground = Color(0xFF1E3A8A);  // Fondo azul principal
+  static const Color cardBackground = Color(0xFF3B82F6);  // Fondo de cards azul claro
+  static const Color surfaceBackground = Color(0xFF1E40AF); // Fondo de superficie azul oscuro
   
   // Colores de texto
   static const Color textPrimary = Color(0xFFFFFFFF);      // Texto principal
@@ -53,11 +53,11 @@ class AutocarTheme {
         iconTheme: IconThemeData(color: textPrimary),
       ),
       cardTheme: CardThemeData(
-        color: cardBackground,
-        elevation: 8,
-        shadowColor: Colors.black.withValues(alpha: 0.3),
+        color: cardBackground.withValues(alpha: 0.2),
+        elevation: 2,
+        shadowColor: Colors.black.withValues(alpha: 0.1),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(12),
         ),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(

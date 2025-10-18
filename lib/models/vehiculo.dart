@@ -1,18 +1,55 @@
+import '../services/maintenance_service.dart';
+
+class MaintenanceData {
+  final double percentage;      // Porcentaje de vida útil restante (0-100%)
+  final String lastChanged;     // Fecha del último cambio/mantenimiento
+  final int dueKm;             // Kilometraje en el que vence
+
+  MaintenanceData({
+    required this.percentage,
+    required this.lastChanged,
+    required this.dueKm,
+  });
+
+  Map<String, dynamic> toMap() {
+    return {
+      'percentage': percentage,
+      'lastChanged': lastChanged,
+      'dueKm': dueKm,
+    };
+  }
+
+  factory MaintenanceData.fromMap(Map<String, dynamic> map) {
+    return MaintenanceData(
+      percentage: map['percentage']?.toDouble() ?? 100.0,
+      lastChanged: map['lastChanged'] ?? DateTime.now().toIso8601String(),
+      dueKm: map['dueKm'] ?? 0,
+    );
+  }
+
+  MaintenanceData copyWith({
+    double? percentage,
+    String? lastChanged,
+    int? dueKm,
+  }) {
+    return MaintenanceData(
+      percentage: percentage ?? this.percentage,
+      lastChanged: lastChanged ?? this.lastChanged,
+      dueKm: dueKm ?? this.dueKm,
+    );
+  }
+}
+
 class Vehiculo {
   final int? id;
   final String marca;
   final String modelo;
-  final String ano;
+  final int ano;
   final String placa;
-  final String color;
+  final String tipo; // 'carro' o 'moto'
   final int kilometraje;
-  final String tipo; // 'auto' o 'moto'
-  final int estadoAceite; // Porcentaje de estado del aceite (0-100)
-  final int estadoLlantas; // Porcentaje de estado de las llantas (0-100)
-  final int estadoFrenos; // Porcentaje de estado de los frenos (0-100)
-  final int estadoBateria; // Porcentaje de estado de la batería (0-100)
-  final String proximoMantenimiento; // Descripción del próximo mantenimiento
-  final int kmProximoMantenimiento; // Kilometraje para próximo mantenimiento
+  final Map<String, MaintenanceData> maintenance; // Estado de cada categoría
+  final DateTime createdAt;
 
   Vehiculo({
     this.id,
@@ -20,15 +57,10 @@ class Vehiculo {
     required this.modelo,
     required this.ano,
     required this.placa,
-    required this.color,
+    required this.tipo,
     required this.kilometraje,
-    this.tipo = 'auto',
-    this.estadoAceite = 100,
-    this.estadoLlantas = 100,
-    this.estadoFrenos = 100,
-    this.estadoBateria = 100,
-    this.proximoMantenimiento = 'Sin mantenimientos programados',
-    this.kmProximoMantenimiento = 0,
+    required this.maintenance,
+    required this.createdAt,
   });
 
   Map<String, dynamic> toMap() {
@@ -38,34 +70,28 @@ class Vehiculo {
       'modelo': modelo,
       'ano': ano,
       'placa': placa,
-      'color': color,
-      'kilometraje': kilometraje,
       'tipo': tipo,
-      'estadoAceite': estadoAceite,
-      'estadoLlantas': estadoLlantas,
-      'estadoFrenos': estadoFrenos,
-      'estadoBateria': estadoBateria,
-      'proximoMantenimiento': proximoMantenimiento,
-      'kmProximoMantenimiento': kmProximoMantenimiento,
+      'kilometraje': kilometraje,
+      'maintenance': maintenance.map((key, value) => MapEntry(key, value.toMap())),
+      'createdAt': createdAt.toIso8601String(),
     };
   }
 
   factory Vehiculo.fromMap(Map<String, dynamic> map) {
+    final maintenanceMap = map['maintenance'] as Map<String, dynamic>? ?? {};
+    final maintenance = maintenanceMap.map((key, value) => 
+      MapEntry(key, MaintenanceData.fromMap(value as Map<String, dynamic>)));
+
     return Vehiculo(
       id: map['id'],
       marca: map['marca'],
       modelo: map['modelo'],
       ano: map['ano'],
       placa: map['placa'],
-      color: map['color'],
+      tipo: map['tipo'],
       kilometraje: map['kilometraje'],
-      tipo: map['tipo'] ?? 'auto',
-      estadoAceite: map['estadoAceite'] ?? 100,
-      estadoLlantas: map['estadoLlantas'] ?? 100,
-      estadoFrenos: map['estadoFrenos'] ?? 100,
-      estadoBateria: map['estadoBateria'] ?? 100,
-      proximoMantenimiento: map['proximoMantenimiento'] ?? 'Sin mantenimientos programados',
-      kmProximoMantenimiento: map['kmProximoMantenimiento'] ?? 0,
+      maintenance: maintenance,
+      createdAt: DateTime.parse(map['createdAt'] ?? DateTime.now().toIso8601String()),
     );
   }
 
@@ -73,17 +99,12 @@ class Vehiculo {
     int? id,
     String? marca,
     String? modelo,
-    String? ano,
+    int? ano,
     String? placa,
-    String? color,
-    int? kilometraje,
     String? tipo,
-    int? estadoAceite,
-    int? estadoLlantas,
-    int? estadoFrenos,
-    int? estadoBateria,
-    String? proximoMantenimiento,
-    int? kmProximoMantenimiento,
+    int? kilometraje,
+    Map<String, MaintenanceData>? maintenance,
+    DateTime? createdAt,
   }) {
     return Vehiculo(
       id: id ?? this.id,
@@ -91,15 +112,132 @@ class Vehiculo {
       modelo: modelo ?? this.modelo,
       ano: ano ?? this.ano,
       placa: placa ?? this.placa,
-      color: color ?? this.color,
-      kilometraje: kilometraje ?? this.kilometraje,
       tipo: tipo ?? this.tipo,
-      estadoAceite: estadoAceite ?? this.estadoAceite,
-      estadoLlantas: estadoLlantas ?? this.estadoLlantas,
-      estadoFrenos: estadoFrenos ?? this.estadoFrenos,
-      estadoBateria: estadoBateria ?? this.estadoBateria,
-      proximoMantenimiento: proximoMantenimiento ?? this.proximoMantenimiento,
-      kmProximoMantenimiento: kmProximoMantenimiento ?? this.kmProximoMantenimiento,
+      kilometraje: kilometraje ?? this.kilometraje,
+      maintenance: maintenance ?? this.maintenance,
+      createdAt: createdAt ?? this.createdAt,
     );
+  }
+
+  // Factory method para crear un nuevo vehículo
+  factory Vehiculo.nuevo({
+    required String marca,
+    required String modelo,
+    required int ano,
+    required String placa,
+    required String tipo,
+    required int kilometraje,
+  }) {
+    // Inicializar datos de mantenimiento usando MaintenanceService
+    final maintenanceData = MaintenanceService.initializeMaintenanceData(tipo, kilometraje);
+    
+    return Vehiculo(
+      marca: marca,
+      modelo: modelo,
+      ano: ano,
+      placa: placa,
+      tipo: tipo,
+      kilometraje: kilometraje,
+      maintenance: maintenanceData,
+      createdAt: DateTime.now(),
+    );
+  }
+
+  // Métodos de conveniencia para compatibilidad
+  String get proximoMantenimiento {
+    final criticalMaintenance = maintenance.entries
+        .where((entry) => entry.value.percentage <= 30)
+        .toList();
+    
+    if (criticalMaintenance.isEmpty) {
+      return 'Todo en orden';
+    }
+    
+    return criticalMaintenance.first.key;
+  }
+
+  int get kmProximoMantenimiento {
+    final criticalMaintenance = maintenance.entries
+        .where((entry) => entry.value.percentage <= 30)
+        .toList();
+    
+    if (criticalMaintenance.isEmpty) {
+      return kilometraje + 5000; // Valor por defecto
+    }
+    
+    return criticalMaintenance.first.value.dueKm;
+  }
+
+  int get estadoAceite => maintenance['oil']?.percentage.round() ?? 100;
+  int get estadoLlantas => maintenance['tires']?.percentage.round() ?? 100;
+  int get estadoFrenos => maintenance['brakes']?.percentage.round() ?? 100;
+  int get estadoBateria => maintenance['battery']?.percentage.round() ?? 100;
+
+  // Método para crear un vehículo nuevo con mantenimiento inicializado
+  static Vehiculo createNew({
+    required String marca,
+    required String modelo,
+    required int ano,
+    required String placa,
+    required String tipo,
+    required int kilometraje,
+  }) {
+    final now = DateTime.now();
+    final maintenance = _initializeMaintenance(kilometraje, tipo, now);
+    
+    return Vehiculo(
+      marca: marca,
+      modelo: modelo,
+      ano: ano,
+      placa: placa,
+      tipo: tipo,
+      kilometraje: kilometraje,
+      maintenance: maintenance,
+      createdAt: now,
+    );
+  }
+
+  // Inicializar mantenimiento para vehículo nuevo
+  static Map<String, MaintenanceData> _initializeMaintenance(int kilometraje, String tipo, DateTime now) {
+    final maintenance = <String, MaintenanceData>{};
+    
+    // Intervalos de mantenimiento por categoría
+    const intervals = {
+      'oil': 5000,
+      'tires': 40000,
+      'brakes': 30000,
+      'battery': 50000,
+      'coolant': 20000,
+      'airFilter': 17500,    // Solo carros
+      'alignment': 10000,    // Solo carros
+      'chain': 22500,        // Solo motos
+      'sparkPlug': 11000,    // Solo motos
+    };
+
+    // Categorías universales
+    final universalCategories = ['oil', 'tires', 'brakes', 'battery', 'coolant'];
+    
+    // Categorías específicas por tipo
+    final carCategories = ['airFilter', 'alignment'];
+    final motoCategories = ['chain', 'sparkPlug'];
+    
+    final categoriesToInclude = List<String>.from(universalCategories);
+    
+    if (tipo == 'carro') {
+      categoriesToInclude.addAll(carCategories);
+    } else if (tipo == 'moto') {
+      categoriesToInclude.addAll(motoCategories);
+    }
+
+    for (final category in categoriesToInclude) {
+      final interval = intervals[category]!;
+      maintenance[category] = MaintenanceData(
+        percentage: 100.0, // Asumimos recién hecho
+        lastChanged: now.toIso8601String(),
+        dueKm: kilometraje + interval,
+      );
+    }
+
+    return maintenance;
   }
 }
