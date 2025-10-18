@@ -1,42 +1,72 @@
 # 🚗 AUTOCAR - Bitácora de Mantenimiento Vehicular
 
-Una aplicación móvil desarrollada en Flutter para la gestión completa de vehículos y sus mantenimientos.
+Una aplicación móvil moderna desarrollada en Flutter para la gestión completa de vehículos y sus mantenimientos con una interfaz de usuario completamente rediseñada.
 
-## ✨ Características
+## ✨ Características Principales
 
-- 📱 **Interfaz moderna** con Material Design
+- 📱 **Interfaz Moderna** con Material Design 3 y tema oscuro elegante
 - 🗄️ **Base de datos local** SQLite para almacenamiento offline
 - 📊 **Gestión completa** de vehículos y mantenimientos
-- 🔍 **Búsqueda y filtrado** de registros
-- 📈 **Historial detallado** de mantenimientos por vehículo
-- ⚙️ **Configuración moderna** con Java 17
+- 🔍 **Sistema de alertas inteligente** con niveles de prioridad
+- 📈 **Monitoreo en tiempo real** del estado de componentes
+- ⚙️ **Configuración moderna** con Java 17 y Core Library Desugaring
 
-## 🏗️ Arquitectura
+## 🎨 Diseño Visual
 
-### Modelos de Datos
-- **Vehículo**: Información básica del vehículo (marca, modelo, año, etc.)
-- **Mantenimiento**: Registros de mantenimientos con fechas, tipos y detalles
+### Paleta de Colores
+- **Azul Principal**: `#1E3A8A` (Fondo oscuro elegante)
+- **Azul Secundario**: `#3B82F6` (Cards y elementos)
+- **Naranja Acento**: `#FF6B35` (Elementos destacados)
+- **Verde**: `#32CD32` (Estado positivo)
+- **Rojo**: `#FF4500` (Alertas críticas)
 
-### Pantallas
-- **Home**: Vista principal con lista de vehículos
-- **Detalle Vehículo**: Información completa del vehículo y sus mantenimientos
-- **Agregar Vehículo**: Formulario para registrar nuevos vehículos
-- **Detalle Mantenimiento**: Información detallada de cada mantenimiento
-- **Agregar Mantenimiento**: Formulario para registrar nuevos mantenimientos
+### Componentes Visuales
+- **Cards redondeados** con efectos de transparencia
+- **Barras de progreso** para estado de componentes
+- **Iconos Material Design** consistentes
+- **Navegación por tabs** en la parte inferior
+- **Animaciones suaves** y transiciones fluidas
 
-### Base de Datos
-- **SQLite** con helper personalizado
-- **Esquemas optimizados** para consultas rápidas
-- **Relaciones** entre vehículos y mantenimientos
+## 🏗️ Arquitectura de Pantallas
+
+### 🏠 Pantalla de Inicio
+- **Vista general del vehículo** con información principal
+- **Kilometraje actual** con opción de edición
+- **Próximo mantenimiento** programado
+- **Estado de componentes** con barras de progreso:
+  - 🛢️ Aceite de Motor
+  - 🚗 Llantas
+  - 🛑 Frenos
+  - 🔋 Batería
+
+### 📖 Pantalla de Bitácora
+- **Historial completo** de mantenimientos
+- **Estadísticas del vehículo** (total mantenimientos, último servicio)
+- **Información detallada** de cada mantenimiento
+- **Filtros por fecha** y tipo de servicio
+
+### 🚨 Pantalla de Alertas
+- **Sistema inteligente** de notificaciones
+- **Niveles de prioridad** (Crítica, Media, Baja)
+- **Alertas automáticas** basadas en:
+  - Kilometraje próximo a mantenimiento
+  - Estado crítico de componentes
+  - Recordatorios programados
+
+### 👤 Pantalla de Perfil
+- **Información del usuario** y estadísticas
+- **Gestión de vehículos** (agregar, editar, eliminar)
+- **Opciones de configuración** y exportación
+- **Información de la aplicación**
 
 ## 🛠️ Stack Tecnológico
 
 - **Flutter SDK** >=3.0.0
 - **Dart** - Lenguaje de programación
 - **SQLite** (sqflite) - Base de datos local
-- **Material Design** - Sistema de diseño
+- **Material Design 3** - Sistema de diseño moderno
 - **Java 17** + Kotlin DSL - Configuración Android moderna
-- **Gradle 8.12** - Sistema de construcción
+- **Gradle 8.12** - Sistema de construcción optimizado
 
 ## 📋 Requisitos
 
@@ -80,67 +110,74 @@ dependencies {
 }
 ```
 
-### Gradle Optimizado
-Configuración optimizada para compilación rápida:
-- **R8 Full Mode** habilitado
-- **Compilación paralela**
-- **Cache de Gradle** activado
+### Base de Datos Mejorada
+- **Esquema v2** con campos adicionales para estado de componentes
+- **Migración automática** desde versiones anteriores
+- **Relaciones optimizadas** entre vehículos y mantenimientos
+- **Datos de ejemplo** incluidos para demostración
 
-## 📱 Funcionalidades
+## 📱 Funcionalidades Detalladas
 
 ### Gestión de Vehículos
-- ✅ Registrar nuevos vehículos
+- ✅ Registrar nuevos vehículos con información completa
 - ✅ Editar información de vehículos existentes
-- ✅ Eliminar vehículos
-- ✅ Ver lista completa de vehículos
+- ✅ Eliminar vehículos con confirmación
+- ✅ Monitoreo del estado de componentes
+- ✅ Cambio de tipo de vehículo (Auto/Moto)
 
 ### Gestión de Mantenimientos
 - ✅ Registrar mantenimientos por vehículo
 - ✅ Diferentes tipos de mantenimiento
-- ✅ Fechas y kilometraje
-- ✅ Notas y observaciones
+- ✅ Fechas y kilometraje automático
+- ✅ Notas y observaciones detalladas
 - ✅ Historial completo por vehículo
+- ✅ Costos y talleres registrados
 
-### Base de Datos
-- ✅ Esquema optimizado
-- ✅ Relaciones entre tablas
-- ✅ Consultas eficientes
-- ✅ Migración automática
+### Sistema de Alertas
+- ✅ Alertas automáticas por kilometraje
+- ✅ Notificaciones de estado crítico
+- ✅ Priorización inteligente de alertas
+- ✅ Acciones rápidas desde las alertas
+- ✅ Historial de alertas resueltas
 
 ## 📊 Estructura del Proyecto
 
 ```
 lib/
 ├── database/
-│   └── database_helper.dart    # Helper para SQLite
+│   └── database_helper.dart    # Helper para SQLite con migración v2
 ├── models/
-│   ├── vehiculo.dart           # Modelo Vehículo
+│   ├── vehiculo.dart           # Modelo Vehículo mejorado
 │   └── mantenimiento.dart      # Modelo Mantenimiento
 ├── screens/
-│   ├── home_screen.dart        # Pantalla principal
-│   ├── vehiculo_detail_screen.dart
-│   ├── add_vehiculo_screen.dart
-│   ├── mantenimiento_detail_screen.dart
-│   └── add_mantenimiento_screen.dart
-└── main.dart                   # Punto de entrada
+│   ├── main_navigation_screen.dart  # Navegación principal
+│   ├── inicio_screen.dart           # Pantalla de inicio
+│   ├── bitacora_screen.dart         # Historial de mantenimientos
+│   ├── alertas_screen.dart          # Sistema de alertas
+│   └── perfil_screen.dart           # Perfil del usuario
+├── utils/
+│   └── data_seeder.dart        # Datos de ejemplo
+└── main.dart                   # Punto de entrada con datos de ejemplo
 ```
 
 ## 🔄 Flujo de Datos
 
-1. **Usuario** interactúa con la interfaz
-2. **Pantalla** valida y procesa datos
-3. **DatabaseHelper** maneja operaciones SQLite
-4. **Modelos** estructuran los datos
-5. **UI** se actualiza con los resultados
+1. **Usuario** interactúa con la interfaz moderna
+2. **Pantalla** valida y procesa datos con animaciones
+3. **DatabaseHelper** maneja operaciones SQLite optimizadas
+4. **Modelos** estructuran los datos con nuevos campos
+5. **UI** se actualiza con efectos visuales suaves
 
 ## 🎯 Próximas Funcionalidades
 
-- [ ] Exportar datos a PDF
-- [ ] Notificaciones de mantenimientos próximos
-- [ ] Gráficos de gastos por vehículo
-- [ ] Sincronización con servidor
-- [ ] Modo oscuro
-- [ ] Backup automático
+- [ ] Exportar datos a PDF con diseño profesional
+- [ ] Notificaciones push para mantenimientos próximos
+- [ ] Gráficos de gastos por vehículo y período
+- [ ] Sincronización con servidor en la nube
+- [ ] Modo oscuro/claro personalizable
+- [ ] Backup automático en Google Drive
+- [ ] Integración con calendario del sistema
+- [ ] Reconocimiento de voz para notas rápidas
 
 ## 🤝 Contribuciones
 
@@ -170,3 +207,15 @@ Si tienes preguntas o necesitas ayuda, puedes:
 ---
 
 ⭐ **¡Dale una estrella al proyecto si te gusta!** ⭐
+
+## 🎉 Changelog
+
+### v2.0.0 - MAJOR UI REDESIGN
+- ✨ Interfaz completamente rediseñada con Material Design 3
+- 🎨 Nuevo sistema de colores y tema oscuro elegante
+- 📱 Navegación por tabs con 4 secciones principales
+- 🚨 Sistema de alertas inteligente con prioridades
+- 📊 Monitoreo en tiempo real del estado de componentes
+- 🗄️ Base de datos mejorada con esquema v2
+- 🔧 Configuración técnica actualizada a Java 17
+- 📈 Optimizaciones de rendimiento y memoria
