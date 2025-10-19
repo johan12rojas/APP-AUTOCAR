@@ -80,31 +80,37 @@ Una aplicación móvil moderna desarrollada en Flutter para la gestión completa
 
 ## 🚀 Instalación y Configuración
 
-1. **Clonar el repositorio**
-   ```bash
-   git clone https://github.com/johan12rojas/APP-AUTOCAR.git
-   cd APP-AUTOCAR
-   ```
+### ⚡ Inicio Rápido
+```bash
+# 1. Clonar el repositorio
+git clone https://github.com/johan12rojas/APP-AUTOCAR.git
+cd APP-AUTOCAR
 
-2. **Instalar dependencias**
-   ```bash
-   flutter pub get
-   ```
+# 2. Instalar dependencias
+flutter pub get
 
-3. **Configurar Android SDK** (si es necesario)
-   - Crear archivo `android/local.properties` con:
-   ```
-   sdk.dir=C:\Users\[Usuario]\AppData\Local\Android\sdk
-   flutter.sdk=C:\Users\[Usuario]\flutter
-   flutter.buildMode=debug
-   flutter.versionName=1.0.0
-   flutter.versionCode=1
-   ```
+# 3. Configurar Android SDK (IMPORTANTE)
+# Copia el archivo de ejemplo y actualiza las rutas
+copy android\local.properties.example android\local.properties
+# Luego edita android/local.properties con tus rutas
 
-4. **Ejecutar la aplicación**
-   ```bash
-   flutter run
-   ```
+# 4. Ejecutar la aplicación
+flutter run
+```
+
+### 📋 Configuración Detallada
+Para una configuración completa paso a paso, consulta el archivo **[CONFIGURACION.md](CONFIGURACION.md)** que incluye:
+- ✅ Requisitos previos detallados
+- ✅ Instrucciones paso a paso
+- ✅ Solución de problemas comunes
+- ✅ Configuración de dispositivos
+- ✅ Verificación de instalación
+
+### 🔧 Archivo de Configuración
+El proyecto incluye `android/local.properties.example` como plantilla. Debes:
+1. **Copiarlo** como `android/local.properties`
+2. **Actualizar las rutas** según tu sistema
+3. **Verificar** con `flutter doctor`
 
 ## 📊 Estructura del Proyecto
 
