@@ -101,6 +101,7 @@ class VehiculoViewModel extends ChangeNotifier {
     required String placa,
     required String tipo,
     required int kilometraje,
+    String? imagenPersonalizada,
   }) async {
     _setLoading(true);
     try {
@@ -111,6 +112,7 @@ class VehiculoViewModel extends ChangeNotifier {
         placa: placa,
         tipo: tipo,
         kilometraje: kilometraje,
+        imagenPersonalizada: imagenPersonalizada,
       );
       
       final id = await _databaseHelper.insertVehiculo(nuevoVehiculo);

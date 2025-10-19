@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'dart:io';
 import '../theme/autocar_theme.dart';
 import '../widgets/background_widgets.dart';
 import '../viewmodels/vehiculo_viewmodel.dart';
@@ -818,17 +819,35 @@ class _InicioScreenState extends State<InicioScreen> {
                 ),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(8),
-                  child: Image.asset(
-                    VehicleImageService.getVehicleImagePath(vehiculo.tipo),
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) {
-                      return Icon(
-                        vehiculo.tipo.contains('moto') ? Icons.motorcycle : Icons.directions_car,
-                        size: 30,
-                        color: Colors.blue,
-                      );
-                    },
-                  ),
+                  child: vehiculo.imagenPersonalizada != null && vehiculo.imagenPersonalizada!.isNotEmpty
+                      ? Image.file(
+                          File(vehiculo.imagenPersonalizada!),
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Image.asset(
+                              VehicleImageService.getVehicleImagePath(vehiculo.tipo),
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) {
+                                return Icon(
+                                  vehiculo.tipo.contains('moto') ? Icons.motorcycle : Icons.directions_car,
+                                  size: 30,
+                                  color: Colors.blue,
+                                );
+                              },
+                            );
+                          },
+                        )
+                      : Image.asset(
+                          VehicleImageService.getVehicleImagePath(vehiculo.tipo),
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Icon(
+                              vehiculo.tipo.contains('moto') ? Icons.motorcycle : Icons.directions_car,
+                              size: 30,
+                              color: Colors.blue,
+                            );
+                          },
+                        ),
                 ),
               ),
               title: Text(
@@ -1164,17 +1183,35 @@ class _InicioScreenState extends State<InicioScreen> {
                 ),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(15),
-                  child: Image.asset(
-                    VehicleImageService.getVehicleImagePath(vehiculo.tipo),
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) {
-                      return Icon(
-                        vehiculo.tipo.contains('moto') ? Icons.motorcycle : Icons.directions_car,
-                        color: Colors.white,
-                        size: 35,
-                      );
-                    },
-                  ),
+                  child: vehiculo.imagenPersonalizada != null && vehiculo.imagenPersonalizada!.isNotEmpty
+                      ? Image.file(
+                          File(vehiculo.imagenPersonalizada!),
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Image.asset(
+                              VehicleImageService.getVehicleImagePath(vehiculo.tipo),
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) {
+                                return Icon(
+                                  vehiculo.tipo.contains('moto') ? Icons.motorcycle : Icons.directions_car,
+                                  color: Colors.white,
+                                  size: 35,
+                                );
+                              },
+                            );
+                          },
+                        )
+                      : Image.asset(
+                          VehicleImageService.getVehicleImagePath(vehiculo.tipo),
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Icon(
+                              vehiculo.tipo.contains('moto') ? Icons.motorcycle : Icons.directions_car,
+                              color: Colors.white,
+                              size: 35,
+                            );
+                          },
+                        ),
                 ),
               ),
               const SizedBox(width: 15),

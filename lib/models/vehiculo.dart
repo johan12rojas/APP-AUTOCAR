@@ -48,6 +48,7 @@ class Vehiculo {
   final String placa;
   final String tipo; // 'carro' o 'moto'
   final int kilometraje;
+  final String? imagenPersonalizada; // Ruta de imagen personalizada del vehículo
   final Map<String, MaintenanceData> maintenance; // Estado de cada categoría
   final DateTime createdAt;
 
@@ -59,6 +60,7 @@ class Vehiculo {
     required this.placa,
     required this.tipo,
     required this.kilometraje,
+    this.imagenPersonalizada,
     required this.maintenance,
     required this.createdAt,
   });
@@ -72,6 +74,7 @@ class Vehiculo {
       'placa': placa,
       'tipo': tipo,
       'kilometraje': kilometraje,
+      'imagenPersonalizada': imagenPersonalizada,
       'maintenance': maintenance.map((key, value) => MapEntry(key, value.toMap())),
       'createdAt': createdAt.toIso8601String(),
     };
@@ -90,6 +93,7 @@ class Vehiculo {
       placa: map['placa'],
       tipo: map['tipo'],
       kilometraje: map['kilometraje'],
+      imagenPersonalizada: map['imagenPersonalizada'],
       maintenance: maintenance,
       createdAt: DateTime.parse(map['createdAt'] ?? DateTime.now().toIso8601String()),
     );
@@ -103,6 +107,7 @@ class Vehiculo {
     String? placa,
     String? tipo,
     int? kilometraje,
+    String? imagenPersonalizada,
     Map<String, MaintenanceData>? maintenance,
     DateTime? createdAt,
   }) {
@@ -114,6 +119,7 @@ class Vehiculo {
       placa: placa ?? this.placa,
       tipo: tipo ?? this.tipo,
       kilometraje: kilometraje ?? this.kilometraje,
+      imagenPersonalizada: imagenPersonalizada ?? this.imagenPersonalizada,
       maintenance: maintenance ?? this.maintenance,
       createdAt: createdAt ?? this.createdAt,
     );
@@ -127,6 +133,7 @@ class Vehiculo {
     required String placa,
     required String tipo,
     required int kilometraje,
+    String? imagenPersonalizada,
   }) {
     // Inicializar datos de mantenimiento usando MaintenanceService
     final maintenanceData = MaintenanceService.initializeMaintenanceData(tipo, kilometraje);
@@ -138,6 +145,7 @@ class Vehiculo {
       placa: placa,
       tipo: tipo,
       kilometraje: kilometraje,
+      imagenPersonalizada: imagenPersonalizada,
       maintenance: maintenanceData,
       createdAt: DateTime.now(),
     );
@@ -181,6 +189,7 @@ class Vehiculo {
     required String placa,
     required String tipo,
     required int kilometraje,
+    String? imagenPersonalizada,
   }) {
     final now = DateTime.now();
     final maintenance = _initializeMaintenance(kilometraje, tipo, now);
@@ -192,6 +201,7 @@ class Vehiculo {
       placa: placa,
       tipo: tipo,
       kilometraje: kilometraje,
+      imagenPersonalizada: imagenPersonalizada,
       maintenance: maintenance,
       createdAt: now,
     );

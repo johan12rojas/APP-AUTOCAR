@@ -21,7 +21,7 @@ class DatabaseHelper {
     String path = join(await getDatabasesPath(), 'autocar_mantenimiento.db');
     return await openDatabase(
       path,
-      version: 3,
+      version: 4,
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
     );
@@ -38,6 +38,7 @@ class DatabaseHelper {
         placa TEXT NOT NULL UNIQUE,
         tipo TEXT NOT NULL,
         kilometraje INTEGER NOT NULL,
+        imagenPersonalizada TEXT,
         maintenance TEXT NOT NULL,
         createdAt TEXT NOT NULL
       )
@@ -66,6 +67,9 @@ class DatabaseHelper {
       await db.execute('DROP TABLE IF EXISTS vehiculos');
       await db.execute('DROP TABLE IF EXISTS mantenimientos');
       await _onCreate(db, newVersion);
+    } else if (oldVersion < 4) {
+      // Agregar campo imagenPersonalizada
+      await db.execute('ALTER TABLE vehiculos ADD COLUMN imagenPersonalizada TEXT');
     }
   }
 

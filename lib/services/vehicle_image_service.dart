@@ -11,7 +11,12 @@ class VehicleImageService {
     'van': 'assets/images/vehicles/van.png',
   };
 
-  static String getVehicleImagePath(String tipo) {
+  static String getVehicleImagePath(String tipo, {String? imagenPersonalizada}) {
+    // Si hay imagen personalizada, usarla
+    if (imagenPersonalizada != null && imagenPersonalizada.isNotEmpty) {
+      return imagenPersonalizada;
+    }
+    
     // Normalizar el tipo a minúsculas y sin espacios
     final normalizedType = tipo.toLowerCase().trim();
     

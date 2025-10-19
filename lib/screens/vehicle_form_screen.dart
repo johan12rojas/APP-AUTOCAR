@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
 import '../models/vehiculo.dart';
 import '../viewmodels/vehiculo_viewmodel.dart';
 import '../services/vehicle_image_service.dart';
@@ -24,15 +26,22 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
   String _marcaSeleccionada = 'Toyota';
   String _modeloSeleccionado = 'Corolla';
   bool _esPersonalizado = false;
+  File? _imagenSeleccionada;
 
   @override
   void initState() {
     super.initState();
-    if (widget.vehiculo != null) {
+      if (widget.vehiculo != null) {
       // Modo edición
       _tipoSeleccionado = _getDisplayNameForType(widget.vehiculo!.tipo);
       _anoController.text = widget.vehiculo!.ano.toString();
       _kilometrajeController.text = widget.vehiculo!.kilometraje.toString();
+      
+      // Cargar imagen personalizada si existe
+      if (widget.vehiculo!.imagenPersonalizada != null && 
+          widget.vehiculo!.imagenPersonalizada!.isNotEmpty) {
+        _imagenSeleccionada = File(widget.vehiculo!.imagenPersonalizada!);
+      }
       
       // Verificar si la marca está en la lista de marcas predeterminadas
       final marcasDisponibles = VehicleImageService.getBrandsForVehicleType(_tipoSeleccionado);
@@ -112,6 +121,130 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
     if (modelos.isNotEmpty) {
       _modeloSeleccionado = modelos.first;
     }
+  }
+
+  void _mostrarOpcionesImagen() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFF1A1A2E),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => Container(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.3),
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(height: 20),
+            const Text(
+              'Seleccionar imagen del vehículo',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 20),
+            Row(
+              children: [
+                Expanded(
+                  child: _buildOpcionImagen(
+                    icon: Icons.camera_alt,
+                    titulo: 'Cámara',
+                    onTap: () => _seleccionarImagen(ImageSource.camera),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: _buildOpcionImagen(
+                    icon: Icons.photo_library,
+                    titulo: 'Galería',
+                    onTap: () => _seleccionarImagen(ImageSource.gallery),
+                  ),
+                ),
+                if (_imagenSeleccionada != null) ...[
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: _buildOpcionImagen(
+                      icon: Icons.delete,
+                      titulo: 'Eliminar',
+                      onTap: _eliminarImagen,
+                    ),
+                  ),
+                ],
+              ],
+            ),
+            const SizedBox(height: 20),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildOpcionImagen({
+    required IconData icon,
+    required String titulo,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(15),
+          border: Border.all(
+            color: Colors.white.withValues(alpha: 0.2),
+            width: 1,
+          ),
+        ),
+        child: Column(
+          children: [
+            Icon(
+              icon,
+              color: const Color(0xFFFF6B35),
+              size: 32,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              titulo,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _seleccionarImagen(ImageSource source) async {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: source);
+    
+    if (pickedFile != null && mounted) {
+      setState(() {
+        _imagenSeleccionada = File(pickedFile.path);
+      });
+      Navigator.pop(context);
+    }
+  }
+
+  void _eliminarImagen() {
+    setState(() {
+      _imagenSeleccionada = null;
+    });
+    Navigator.pop(context);
   }
 
   @override
@@ -196,7 +329,10 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
   }
 
   Widget _buildVehiclePreview() {
-    final imagePath = VehicleImageService.getVehicleImagePath(_getTypeForDatabase(_tipoSeleccionado));
+    final imagePath = VehicleImageService.getVehicleImagePath(
+      _getTypeForDatabase(_tipoSeleccionado),
+      imagenPersonalizada: _imagenSeleccionada?.path,
+    );
     
     return Container(
       width: double.infinity,
@@ -211,18 +347,64 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
       ),
       child: Column(
         children: [
-          Container(
-            width: 120,
-            height: 120,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(15),
-              color: Colors.white.withValues(alpha: 0.1),
+          GestureDetector(
+            onTap: _mostrarOpcionesImagen,
+            child: Container(
+              width: 120,
+              height: 120,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(15),
+                color: Colors.white.withValues(alpha: 0.1),
+                border: Border.all(
+                  color: Colors.white.withValues(alpha: 0.3),
+                  width: 2,
+                ),
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(15),
+                child: _imagenSeleccionada != null
+                    ? Image.file(
+                        _imagenSeleccionada!,
+                        fit: BoxFit.cover,
+                      )
+                    : Image.asset(
+                        imagePath,
+                        fit: BoxFit.contain,
+                      ),
+              ),
             ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(15),
-              child: Image.asset(
-                imagePath,
-                fit: BoxFit.contain,
+          ),
+          const SizedBox(height: 10),
+          GestureDetector(
+            onTap: _mostrarOpcionesImagen,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFF6B35).withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: const Color(0xFFFF6B35),
+                  width: 1,
+                ),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    _imagenSeleccionada != null ? Icons.edit : Icons.add_a_photo,
+                    color: const Color(0xFFFF6B35),
+                    size: 16,
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    _imagenSeleccionada != null ? 'Cambiar foto' : 'Agregar foto',
+                    style: const TextStyle(
+                      color: Color(0xFFFF6B35),
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -237,7 +419,7 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
           ),
           if (!_esPersonalizado) ...[
             Text(
-              '${_marcaSeleccionada} ${_modeloSeleccionado}',
+              '$_marcaSeleccionada $_modeloSeleccionado',
               style: TextStyle(
                 color: Colors.white.withValues(alpha: 0.8),
                 fontSize: 16,
@@ -597,6 +779,19 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
     try {
       final viewModel = context.read<VehiculoViewModel>();
       
+      final nuevoVehiculo = Vehiculo(
+        id: widget.vehiculo?.id,
+        marca: marca,
+        modelo: modelo,
+        ano: int.parse(_anoController.text),
+        placa: widget.vehiculo?.placa ?? 'N/A',
+        tipo: _getTypeForDatabase(_tipoSeleccionado),
+        kilometraje: int.parse(_kilometrajeController.text),
+        imagenPersonalizada: _imagenSeleccionada?.path,
+        maintenance: widget.vehiculo?.maintenance ?? {},
+        createdAt: widget.vehiculo?.createdAt ?? DateTime.now(),
+      );
+      
       if (widget.vehiculo == null) {
         // Agregar nuevo vehículo
         await viewModel.agregarVehiculo(
@@ -606,22 +801,18 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
           placa: 'N/A',
           tipo: _getTypeForDatabase(_tipoSeleccionado),
           kilometraje: int.parse(_kilometrajeController.text),
+          imagenPersonalizada: _imagenSeleccionada?.path,
         );
         _showSuccessMessage('Vehículo agregado correctamente');
       } else {
         // Actualizar vehículo existente
-        final vehiculoActualizado = widget.vehiculo!.copyWith(
-          marca: marca,
-          modelo: modelo,
-          ano: int.parse(_anoController.text),
-          kilometraje: int.parse(_kilometrajeController.text),
-          tipo: _getTypeForDatabase(_tipoSeleccionado),
-        );
-        await viewModel.actualizarVehiculo(vehiculoActualizado);
+        await viewModel.actualizarVehiculo(nuevoVehiculo);
         _showSuccessMessage('Vehículo actualizado correctamente');
       }
       
-      Navigator.pop(context);
+      if (mounted) {
+        Navigator.pop(context);
+      }
     } catch (e) {
       _showSuccessMessage('Error: $e');
     }

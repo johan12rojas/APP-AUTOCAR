@@ -550,10 +550,22 @@ class _PerfilScreenState extends State<PerfilScreen> {
             ),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(8),
-              child: Image.asset(
-                VehicleImageService.getVehicleImagePath(vehiculo.tipo),
-                fit: BoxFit.cover,
-              ),
+              child: vehiculo.imagenPersonalizada != null && vehiculo.imagenPersonalizada!.isNotEmpty
+                  ? Image.file(
+                      File(vehiculo.imagenPersonalizada!),
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        // Si la imagen personalizada no se puede cargar, usar la predeterminada
+                        return Image.asset(
+                          VehicleImageService.getVehicleImagePath(vehiculo.tipo),
+                          fit: BoxFit.cover,
+                        );
+                      },
+                    )
+                  : Image.asset(
+                      VehicleImageService.getVehicleImagePath(vehiculo.tipo),
+                      fit: BoxFit.cover,
+                    ),
             ),
           ),
           const SizedBox(width: 15),
