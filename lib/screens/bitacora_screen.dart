@@ -4,12 +4,10 @@ import '../models/mantenimiento.dart';
 import '../models/vehiculo.dart';
 import '../database/database_helper.dart';
 import '../viewmodels/vehiculo_viewmodel.dart';
-import '../services/maintenance_service.dart';
 import '../theme/autocar_theme.dart';
 import '../widgets/background_widgets.dart';
 import '../services/auto_maintenance_scheduler.dart';
 import 'agendar_mantenimiento_screen.dart';
-import 'completar_mantenimiento_screen.dart';
 
 class BitacoraScreen extends StatefulWidget {
   const BitacoraScreen({super.key});
@@ -889,7 +887,12 @@ class _BitacoraScreenState extends State<BitacoraScreen> with TickerProviderStat
                 await viewModel.actualizarKilometrajeVehiculo(viewModel.vehiculoActual!.id!, kilometrajeVehiculo);
 
                 // Luego usar AutoMaintenanceScheduler para completar el mantenimiento
-                await AutoMaintenanceScheduler.completeMaintenance(mantenimiento.id!, viewModel.vehiculoActual!, _dbHelper);
+                await AutoMaintenanceScheduler.completeMaintenance(
+                  mantenimiento.id!, 
+                  viewModel.vehiculoActual!, 
+                  costoReal: costo,
+                  dbHelper: _dbHelper,
+                );
 
                 Navigator.pop(context);
                 await _cargarMantenimientos();

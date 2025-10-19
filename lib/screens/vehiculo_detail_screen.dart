@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/vehiculo.dart';
 import '../models/mantenimiento.dart';
 import '../database/database_helper.dart';
+import '../widgets/background_widgets.dart';
 import 'agendar_mantenimiento_screen.dart';
 import 'mantenimiento_detail_screen.dart';
 
@@ -35,16 +36,31 @@ class _VehiculoDetailScreenState extends State<VehiculoDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('${widget.vehiculo.marca} ${widget.vehiculo.modelo}'),
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-      ),
+    return BackgroundGradientWidget(
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(
+          title: Text(
+            '${widget.vehiculo.marca} ${widget.vehiculo.modelo}',
+            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          ),
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          iconTheme: const IconThemeData(color: Colors.white),
+        ),
       body: Column(
         children: [
           // Información del vehículo
-          Card(
+          Container(
             margin: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(15),
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.2),
+                width: 1,
+              ),
+            ),
             child: Padding(
               padding: const EdgeInsets.all(16),
               child: Column(
@@ -52,7 +68,7 @@ class _VehiculoDetailScreenState extends State<VehiculoDetailScreen> {
                 children: [
                   Row(
                     children: [
-                      const Icon(Icons.directions_car, size: 40, color: Colors.blue),
+                      const Icon(Icons.directions_car, size: 40, color: Colors.white),
                       const SizedBox(width: 16),
                       Expanded(
                         child: Column(
@@ -63,11 +79,12 @@ class _VehiculoDetailScreenState extends State<VehiculoDetailScreen> {
                               style: const TextStyle(
                                 fontSize: 20,
                                 fontWeight: FontWeight.bold,
+                                color: Colors.white,
                               ),
                             ),
                             Text(
                               'Año: ${widget.vehiculo.ano}',
-                              style: const TextStyle(fontSize: 16),
+                              style: const TextStyle(fontSize: 16, color: Colors.white70),
                             ),
                           ],
                         ),
@@ -85,31 +102,35 @@ class _VehiculoDetailScreenState extends State<VehiculoDetailScreen> {
           // Lista de mantenimientos
           Expanded(
             child: _isLoading
-                ? const Center(child: CircularProgressIndicator())
+                ? const Center(
+                    child: CircularProgressIndicator(
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                    ),
+                  )
                 : _mantenimientos.isEmpty
-                    ? const Center(
+                    ? Center(
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Icon(
                               Icons.build,
                               size: 80,
-                              color: Colors.grey,
+                              color: Colors.white.withValues(alpha: 0.5),
                             ),
-                            SizedBox(height: 16),
+                            const SizedBox(height: 16),
                             Text(
                               'No hay mantenimientos registrados',
                               style: TextStyle(
                                 fontSize: 18,
-                                color: Colors.grey,
+                                color: Colors.white.withValues(alpha: 0.7),
                               ),
                             ),
-                            SizedBox(height: 8),
+                            const SizedBox(height: 8),
                             Text(
                               'Toca el botón + para agregar el primer mantenimiento',
                               style: TextStyle(
                                 fontSize: 14,
-                                color: Colors.grey,
+                                color: Colors.white.withValues(alpha: 0.5),
                               ),
                             ),
                           ],
@@ -178,7 +199,10 @@ class _VehiculoDetailScreenState extends State<VehiculoDetailScreen> {
           );
           _loadMantenimientos();
         },
+        backgroundColor: const Color(0xFFFF6B35),
+        foregroundColor: Colors.white,
         child: const Icon(Icons.add),
+      ),
       ),
     );
   }
@@ -192,10 +216,18 @@ class _VehiculoDetailScreenState extends State<VehiculoDetailScreen> {
             width: 80,
             child: Text(
               '$label:',
-              style: const TextStyle(fontWeight: FontWeight.bold),
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                color: Colors.white70,
+              ),
             ),
           ),
-          Expanded(child: Text(value)),
+          Expanded(
+            child: Text(
+              value,
+              style: const TextStyle(color: Colors.white),
+            ),
+          ),
         ],
       ),
     );

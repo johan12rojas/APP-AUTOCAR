@@ -1,11 +1,9 @@
-import 'dart:io';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 import 'package:flutter/material.dart';
 import '../models/vehiculo.dart';
 import '../models/mantenimiento.dart';
-import '../services/vehicle_image_service.dart';
 
 class PdfExportService {
   static String _getVehicleTypeDescription(String tipo) {

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../theme/autocar_theme.dart';
 
-/// Widget para fondo con degradado azul sutil
+/// Widget para fondo con degradado moderno elegante
 class BackgroundGradientWidget extends StatelessWidget {
   final Widget child;
   final bool showPattern;
@@ -14,20 +14,54 @@ class BackgroundGradientWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            Color(0xFF1E3A8A), // Azul principal
-            Color(0xFF3B82F6), // Azul medio
-            Color(0xFF1E40AF), // Azul oscuro
-          ],
-          stops: [0.0, 0.5, 1.0],
+    return Stack(
+      children: [
+        // Gradiente principal
+        Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Color(0xFF081126),
+                Color(0xFF0E2242),
+                Color(0xFF15335D),
+                Color(0xFF1B3E75),
+                Color(0xFF0A1A33),
+              ],
+              stops: [0.0, 0.25, 0.55, 0.8, 1.0],
+            ),
+          ),
         ),
-      ),
-      child: child,
+
+        // Luz central difuminada (para efecto de profundidad)
+        Positioned.fill(
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: RadialGradient(
+                center: const Alignment(0.0, -0.2),
+                radius: 0.9,
+                colors: [
+                  Colors.white.withOpacity(0.06),
+                  Colors.transparent,
+                ],
+                stops: const [0.0, 1.0],
+              ),
+            ),
+          ),
+        ),
+
+        // Opcional: patrón de puntos
+        if (showPattern)
+          DottedBackgroundWidget(
+            dotColor: Colors.white.withOpacity(0.08),
+            dotSize: 1.2,
+            spacing: 32.0,
+            child: child,
+          )
+        else
+          child,
+      ],
     );
   }
 }

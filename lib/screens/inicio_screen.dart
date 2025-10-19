@@ -40,7 +40,7 @@ class _InicioScreenState extends State<InicioScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AutocarTheme.darkBackground,
+      backgroundColor: const Color(0xFF1A1A2E),
       body: BackgroundGradientWidget(
         child: SafeArea(
           child: Consumer<VehiculoViewModel>(
@@ -1350,9 +1350,16 @@ class _InicioScreenState extends State<InicioScreen> {
               onTap: () {
                 // El sistema ahora es completamente automático
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('El mantenimiento se programa automáticamente según el kilometraje'),
-                    backgroundColor: Colors.green,
+                  SnackBar(
+                    content: const Text(
+                      'El mantenimiento se programa automáticamente según el kilometraje',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                    backgroundColor: const Color(0xFF1A1A2E),
+                    behavior: SnackBarBehavior.floating,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
                   ),
                 );
               },
@@ -1559,13 +1566,22 @@ class _InicioScreenState extends State<InicioScreen> {
             ),
             // Barra de progreso con gradiente
             Container(
-              width: (porcentaje / 100) * MediaQuery.of(context).size.width * 0.3, // Ajustar según el ancho disponible
+              width: double.infinity,
               height: 8,
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.centerLeft,
                   end: Alignment.centerRight,
-                  colors: gradientColors,
+                  colors: [
+                    ...gradientColors,
+                    Colors.transparent,
+                  ],
+                  stops: [
+                    0.0,
+                    (porcentaje / 100).clamp(0.0, 1.0),
+                    (porcentaje / 100).clamp(0.0, 1.0),
+                    1.0,
+                  ],
                 ),
                 borderRadius: BorderRadius.circular(4),
                 boxShadow: [

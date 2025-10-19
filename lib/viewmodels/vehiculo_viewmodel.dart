@@ -231,7 +231,11 @@ class VehiculoViewModel extends ChangeNotifier {
       await actualizarKilometrajeVehiculo(_vehiculoActual!.id!, nuevoKilometrajeVehiculo);
       
       // Completar el mantenimiento usando el AutoMaintenanceScheduler
-      await AutoMaintenanceScheduler.completeMaintenance(mantenimientoId, _vehiculoActual!, _databaseHelper);
+      await AutoMaintenanceScheduler.completeMaintenance(
+        mantenimientoId, 
+        _vehiculoActual!, 
+        dbHelper: _databaseHelper,
+      );
       
       await cargarMantenimientos();
       _clearError();

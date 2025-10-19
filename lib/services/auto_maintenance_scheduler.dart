@@ -72,7 +72,7 @@ class AutoMaintenanceScheduler {
   }
 
   /// Actualiza el estado de un mantenimiento cuando se completa
-  static Future<void> completeMaintenance(int mantenimientoId, Vehiculo vehiculo, [DatabaseHelper? dbHelper]) async {
+  static Future<void> completeMaintenance(int mantenimientoId, Vehiculo vehiculo, {double? costoReal, DatabaseHelper? dbHelper}) async {
     final helper = dbHelper ?? _dbHelper;
     final mantenimiento = await helper.getMantenimientoById(mantenimientoId);
     if (mantenimiento == null) return;
@@ -84,6 +84,7 @@ class AutoMaintenanceScheduler {
     // Actualizar el estado del mantenimiento
     final mantenimientoActualizado = mantenimiento.copyWith(
       status: 'completed',
+      costo: costoReal ?? mantenimiento.costo,
     );
 
     await helper.updateMantenimiento(mantenimientoActualizado);

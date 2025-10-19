@@ -29,74 +29,59 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
         child: _screens[_currentIndex],
       ),
       bottomNavigationBar: Container(
-        margin: const EdgeInsets.fromLTRB(15, 0, 15, 10),
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              Colors.white.withValues(alpha: 0.15),
-              Colors.white.withValues(alpha: 0.05),
+              const Color(0xFF1A1A2E).withValues(alpha: 0.95),
+              const Color(0xFF16213E).withValues(alpha: 0.98),
             ],
           ),
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: Colors.white.withValues(alpha: 0.2),
-            width: 1,
+          border: Border(
+            top: BorderSide(
+              color: Colors.white.withValues(alpha: 0.1),
+              width: 0.5,
+            ),
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.1),
+              color: Colors.black.withValues(alpha: 0.5),
               blurRadius: 15,
-              offset: const Offset(0, 5),
-            ),
-            BoxShadow(
-              color: Colors.white.withValues(alpha: 0.1),
-              blurRadius: 15,
-              offset: const Offset(0, -3),
+              offset: const Offset(0, -5),
+              spreadRadius: 2,
             ),
           ],
         ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(20),
-          child: BottomNavigationBar(
-            currentIndex: _currentIndex,
-            onTap: (index) {
-              setState(() {
-                _currentIndex = index;
-              });
-            },
-            type: BottomNavigationBarType.fixed,
-            backgroundColor: Colors.transparent,
-            elevation: 0,
-            selectedItemColor: Colors.white,
-            unselectedItemColor: Colors.white.withValues(alpha: 0.6),
-            selectedLabelStyle: const TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 10,
-              letterSpacing: 0.2,
-            ),
-            unselectedLabelStyle: TextStyle(
-              fontSize: 9,
-              color: Colors.white.withValues(alpha: 0.6),
-            ),
-            items: [
+        child: BottomNavigationBar(
+          currentIndex: _currentIndex,
+          onTap: (index) {
+            setState(() {
+              _currentIndex = index;
+            });
+          },
+          type: BottomNavigationBarType.fixed,
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          selectedItemColor: Colors.white,
+          unselectedItemColor: Colors.white.withValues(alpha: 0.4),
+          selectedLabelStyle: const TextStyle(
+            fontWeight: FontWeight.w600,
+            fontSize: 10,
+            letterSpacing: 0.2,
+          ),
+          unselectedLabelStyle: TextStyle(
+            fontSize: 9,
+            fontWeight: FontWeight.w400,
+            color: Colors.white.withValues(alpha: 0.4),
+          ),
+          items: [
               BottomNavigationBarItem(
                 icon: Container(
-                  padding: const EdgeInsets.all(5),
+                  padding: const EdgeInsets.all(6),
                   decoration: BoxDecoration(
-                    gradient: _currentIndex == 0 
-                        ? LinearGradient(
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                            colors: [
-                              const Color(0xFFFF6B35).withValues(alpha: 0.8),
-                              const Color(0xFFFF8A65).withValues(alpha: 0.6),
-                            ],
-                          )
-                        : null,
                     color: _currentIndex == 0 
-                        ? null
+                        ? const Color(0xFFFF6B35)
                         : Colors.transparent,
                     borderRadius: BorderRadius.circular(12),
                     boxShadow: _currentIndex == 0 ? [
@@ -110,27 +95,17 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                   child: Icon(
                     Icons.home_rounded,
                     size: 18,
-                    color: _currentIndex == 0 ? Colors.white : Colors.white.withValues(alpha: 0.6),
+                    color: _currentIndex == 0 ? Colors.white : Colors.white.withValues(alpha: 0.4),
                   ),
                 ),
                 label: 'Inicio',
               ),
               BottomNavigationBarItem(
                 icon: Container(
-                  padding: const EdgeInsets.all(5),
+                  padding: const EdgeInsets.all(6),
                   decoration: BoxDecoration(
-                    gradient: _currentIndex == 1 
-                        ? LinearGradient(
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                            colors: [
-                              const Color(0xFFFF6B35).withValues(alpha: 0.8),
-                              const Color(0xFFFF8A65).withValues(alpha: 0.6),
-                            ],
-                          )
-                        : null,
                     color: _currentIndex == 1 
-                        ? null
+                        ? const Color(0xFFFF6B35)
                         : Colors.transparent,
                     borderRadius: BorderRadius.circular(12),
                     boxShadow: _currentIndex == 1 ? [
@@ -144,27 +119,17 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                   child: Icon(
                     Icons.book_rounded,
                     size: 18,
-                    color: _currentIndex == 1 ? Colors.white : Colors.white.withValues(alpha: 0.6),
+                    color: _currentIndex == 1 ? Colors.white : Colors.white.withValues(alpha: 0.4),
                   ),
                 ),
                 label: 'Bitácora',
               ),
               BottomNavigationBarItem(
                 icon: Container(
-                  padding: const EdgeInsets.all(5),
+                  padding: const EdgeInsets.all(6),
                   decoration: BoxDecoration(
-                    gradient: _currentIndex == 2 
-                        ? LinearGradient(
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                            colors: [
-                              const Color(0xFFFF6B35).withValues(alpha: 0.8),
-                              const Color(0xFFFF8A65).withValues(alpha: 0.6),
-                            ],
-                          )
-                        : null,
                     color: _currentIndex == 2 
-                        ? null
+                        ? const Color(0xFFFF6B35)
                         : Colors.transparent,
                     borderRadius: BorderRadius.circular(12),
                     boxShadow: _currentIndex == 2 ? [
@@ -178,27 +143,17 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                   child: Icon(
                     Icons.notifications_rounded,
                     size: 18,
-                    color: _currentIndex == 2 ? Colors.white : Colors.white.withValues(alpha: 0.6),
+                    color: _currentIndex == 2 ? Colors.white : Colors.white.withValues(alpha: 0.4),
                   ),
                 ),
                 label: 'Alertas',
               ),
               BottomNavigationBarItem(
                 icon: Container(
-                  padding: const EdgeInsets.all(5),
+                  padding: const EdgeInsets.all(6),
                   decoration: BoxDecoration(
-                    gradient: _currentIndex == 3 
-                        ? LinearGradient(
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                            colors: [
-                              const Color(0xFFFF6B35).withValues(alpha: 0.8),
-                              const Color(0xFFFF8A65).withValues(alpha: 0.6),
-                            ],
-                          )
-                        : null,
                     color: _currentIndex == 3 
-                        ? null
+                        ? const Color(0xFFFF6B35)
                         : Colors.transparent,
                     borderRadius: BorderRadius.circular(12),
                     boxShadow: _currentIndex == 3 ? [
@@ -212,7 +167,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                   child: Icon(
                     Icons.person_rounded,
                     size: 18,
-                    color: _currentIndex == 3 ? Colors.white : Colors.white.withValues(alpha: 0.6),
+                    color: _currentIndex == 3 ? Colors.white : Colors.white.withValues(alpha: 0.4),
                   ),
                 ),
                 label: 'Perfil',
@@ -220,7 +175,6 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
             ],
           ),
         ),
-      ),
     );
   }
 }
