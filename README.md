@@ -1,79 +1,82 @@
-# 🚗 AUTOCAR - Bitácora de Mantenimiento Vehicular
+# 🚗 AutoCar - Aplicación de Gestión de Mantenimiento Vehicular
 
-Una aplicación móvil moderna desarrollada en Flutter para la gestión completa de vehículos y sus mantenimientos con una interfaz de usuario completamente rediseñada.
+Una aplicación móvil moderna desarrollada en Flutter para la gestión completa de vehículos y sus mantenimientos con una interfaz elegante y funcionalidades avanzadas.
 
 ## ✨ Características Principales
 
-- 📱 **Interfaz Moderna** con Material Design 3 y tema oscuro elegante
-- 🗄️ **Base de datos local** SQLite para almacenamiento offline
-- 📊 **Gestión completa** de vehículos y mantenimientos
-- 🔍 **Sistema de alertas inteligente** con niveles de prioridad
-- 📈 **Monitoreo en tiempo real** del estado de componentes
-- ⚙️ **Configuración moderna** con Java 17 y Core Library Desugaring
+### 🎨 Interfaz Moderna
+- **Diseño elegante** con gradientes diagonales y efectos de transparencia
+- **Pantalla completa** immersive para una experiencia envolvente
+- **Navegación fluida** con barra de navegación inferior estilizada
+- **Tema oscuro** con colores cuidadosamente seleccionados
 
-## 🎨 Diseño Visual
+### 🚗 Sistema Completo de Vehículos
+- **Gestión completa** de vehículos (agregar, editar, eliminar)
+- **Tipos de vehículos**: Carro, Sedán, SUV, Hatchback, Motocicleta, Camión, Van
+- **Sistema inteligente** de marcas y modelos predeterminados
+- **Opción personalizada** para marcas/modelos no listados
+- **Vista previa de imágenes** según el tipo de vehículo seleccionado
+- **Formulario en pantalla completa** con diseño profesional
 
-### Paleta de Colores
-- **Azul Principal**: `#1E3A8A` (Fondo oscuro elegante)
-- **Azul Secundario**: `#3B82F6` (Cards y elementos)
-- **Naranja Acento**: `#FF6B35` (Elementos destacados)
-- **Verde**: `#32CD32` (Estado positivo)
-- **Rojo**: `#FF4500` (Alertas críticas)
+### 📊 Dashboard Inteligente
+- **Estado de componentes** con barras de progreso mejoradas
+- **Monitoreo en tiempo real** del estado del vehículo
+- **Alertas inteligentes** con sistema de prioridades
+- **Estadísticas detalladas** de gastos y mantenimientos
 
-### Componentes Visuales
-- **Cards redondeados** con efectos de transparencia
-- **Barras de progreso** para estado de componentes
-- **Iconos Material Design** consistentes
-- **Navegación por tabs** en la parte inferior
-- **Animaciones suaves** y transiciones fluidas
+### 📝 Sistema de Mantenimiento
+- **Bitácora completa** de mantenimientos
+- **Registro de gastos** con acumulación automática
+- **Exportación PDF** con diseño profesional
+- **Seguimiento de costos** por categoría y período
 
-## 🏗️ Arquitectura de Pantallas
-
-### 🏠 Pantalla de Inicio
-- **Vista general del vehículo** con información principal
-- **Kilometraje actual** con opción de edición
-- **Próximo mantenimiento** programado
-- **Estado de componentes** con barras de progreso:
-  - 🛢️ Aceite de Motor
-  - 🚗 Llantas
-  - 🛑 Frenos
-  - 🔋 Batería
-
-### 📖 Pantalla de Bitácora
-- **Historial completo** de mantenimientos
-- **Estadísticas del vehículo** (total mantenimientos, último servicio)
-- **Información detallada** de cada mantenimiento
-- **Filtros por fecha** y tipo de servicio
-
-### 🚨 Pantalla de Alertas
-- **Sistema inteligente** de notificaciones
-- **Niveles de prioridad** (Crítica, Media, Baja)
-- **Alertas automáticas** basadas en:
-  - Kilometraje próximo a mantenimiento
-  - Estado crítico de componentes
-  - Recordatorios programados
-
-### 👤 Pantalla de Perfil
-- **Información del usuario** y estadísticas
-- **Gestión de vehículos** (agregar, editar, eliminar)
-- **Opciones de configuración** y exportación
-- **Información de la aplicación**
+### 👤 Perfil de Usuario
+- **Gestión de imagen de perfil** desde galería
+- **Recomendaciones inteligentes** basadas en gastos y estado del vehículo
+- **Estadísticas personales** y resumen de gastos
+- **Opciones de configuración** avanzadas
 
 ## 🛠️ Stack Tecnológico
 
 - **Flutter SDK** >=3.0.0
 - **Dart** - Lenguaje de programación
+- **Provider** - Gestión de estado
 - **SQLite** (sqflite) - Base de datos local
+- **SharedPreferences** - Almacenamiento de preferencias
+- **Image Picker** - Selección de imágenes
+- **PDF Export** - Generación de reportes
 - **Material Design 3** - Sistema de diseño moderno
-- **Java 17** + Kotlin DSL - Configuración Android moderna
-- **Gradle 8.12** - Sistema de construcción optimizado
 
-## 📋 Requisitos
+## 🎨 Paleta de Colores
 
-- Flutter SDK >=3.0.0
-- Dart SDK
-- Android Studio / VS Code
-- Dispositivo Android o emulador
+- **Gradiente Principal**: Azul oscuro elegante con efectos de luz
+- **Naranja Acento**: `#FF6B35` (Elementos destacados)
+- **Transparencias**: Efectos de cristal y profundidad
+- **Contraste Optimizado**: Texto blanco sobre fondos oscuros
+
+## 📱 Funcionalidades Detalladas
+
+### Sistema de Vehículos
+- ✅ **Agregar vehículos** con formulario completo
+- ✅ **Editar información** de vehículos existentes
+- ✅ **Eliminar vehículos** con confirmación
+- ✅ **Cambiar vehículo activo** fácilmente
+- ✅ **Sistema de marcas** predeterminadas por tipo
+- ✅ **Modelos famosos** según la marca seleccionada
+
+### Gestión de Mantenimientos
+- ✅ **Registro completo** de mantenimientos
+- ✅ **Seguimiento de gastos** automático
+- ✅ **Alertas por kilometraje** y estado crítico
+- ✅ **Exportación PDF** de reportes
+- ✅ **Historial detallado** con filtros
+
+### Interfaz de Usuario
+- ✅ **Diseño responsive** para diferentes tamaños de pantalla
+- ✅ **Animaciones suaves** y transiciones fluidas
+- ✅ **Notificaciones mejoradas** con buen contraste
+- ✅ **Formularios profesionales** con validación
+- ✅ **Navegación intuitiva** entre secciones
 
 ## 🚀 Instalación y Configuración
 
@@ -88,96 +91,106 @@ Una aplicación móvil moderna desarrollada en Flutter para la gestión completa
    flutter pub get
    ```
 
-3. **Ejecutar la aplicación**
+3. **Configurar Android SDK** (si es necesario)
+   - Crear archivo `android/local.properties` con:
+   ```
+   sdk.dir=C:\Users\[Usuario]\AppData\Local\Android\sdk
+   flutter.sdk=C:\Users\[Usuario]\flutter
+   flutter.buildMode=debug
+   flutter.versionName=1.0.0
+   flutter.versionCode=1
+   ```
+
+4. **Ejecutar la aplicación**
    ```bash
    flutter run
    ```
-
-## 🔧 Configuración Técnica
-
-### Java 17 + Core Library Desugaring
-El proyecto está configurado con Java 17 y Core Library Desugaring habilitado para máxima compatibilidad:
-
-```kotlin
-compileOptions {
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
-    isCoreLibraryDesugaringEnabled = true
-}
-
-dependencies {
-    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
-}
-```
-
-### Base de Datos Mejorada
-- **Esquema v2** con campos adicionales para estado de componentes
-- **Migración automática** desde versiones anteriores
-- **Relaciones optimizadas** entre vehículos y mantenimientos
-- **Datos de ejemplo** incluidos para demostración
-
-## 📱 Funcionalidades Detalladas
-
-### Gestión de Vehículos
-- ✅ Registrar nuevos vehículos con información completa
-- ✅ Editar información de vehículos existentes
-- ✅ Eliminar vehículos con confirmación
-- ✅ Monitoreo del estado de componentes
-- ✅ Cambio de tipo de vehículo (Auto/Moto)
-
-### Gestión de Mantenimientos
-- ✅ Registrar mantenimientos por vehículo
-- ✅ Diferentes tipos de mantenimiento
-- ✅ Fechas y kilometraje automático
-- ✅ Notas y observaciones detalladas
-- ✅ Historial completo por vehículo
-- ✅ Costos y talleres registrados
-
-### Sistema de Alertas
-- ✅ Alertas automáticas por kilometraje
-- ✅ Notificaciones de estado crítico
-- ✅ Priorización inteligente de alertas
-- ✅ Acciones rápidas desde las alertas
-- ✅ Historial de alertas resueltas
 
 ## 📊 Estructura del Proyecto
 
 ```
 lib/
 ├── database/
-│   └── database_helper.dart    # Helper para SQLite con migración v2
+│   └── database_helper.dart          # Helper para SQLite
 ├── models/
-│   ├── vehiculo.dart           # Modelo Vehículo mejorado
-│   └── mantenimiento.dart      # Modelo Mantenimiento
+│   ├── vehiculo.dart                 # Modelo Vehículo
+│   └── mantenimiento.dart            # Modelo Mantenimiento
 ├── screens/
-│   ├── main_navigation_screen.dart  # Navegación principal
-│   ├── inicio_screen.dart           # Pantalla de inicio
-│   ├── bitacora_screen.dart         # Historial de mantenimientos
-│   ├── alertas_screen.dart          # Sistema de alertas
-│   └── perfil_screen.dart           # Perfil del usuario
-├── utils/
-│   └── data_seeder.dart        # Datos de ejemplo
-└── main.dart                   # Punto de entrada con datos de ejemplo
+│   ├── main_navigation_screen.dart   # Navegación principal
+│   ├── inicio_screen.dart            # Dashboard principal
+│   ├── bitacora_screen.dart          # Historial de mantenimientos
+│   ├── perfil_screen.dart            # Perfil del usuario
+│   └── vehicle_form_screen.dart      # Formulario de vehículos
+├── services/
+│   ├── vehicle_image_service.dart    # Gestión de imágenes
+│   ├── user_preferences_service.dart # Preferencias del usuario
+│   ├── pdf_export_service.dart       # Exportación PDF
+│   └── auto_maintenance_scheduler.dart # Programación automática
+├── viewmodels/
+│   └── vehiculo_viewmodel.dart       # Lógica de negocio
+├── widgets/
+│   └── background_widgets.dart       # Widgets de fondo
+└── main.dart                         # Punto de entrada
 ```
 
-## 🔄 Flujo de Datos
+## 🎯 Funcionalidades Avanzadas
 
-1. **Usuario** interactúa con la interfaz moderna
-2. **Pantalla** valida y procesa datos con animaciones
-3. **DatabaseHelper** maneja operaciones SQLite optimizadas
-4. **Modelos** estructuran los datos con nuevos campos
-5. **UI** se actualiza con efectos visuales suaves
+### Sistema de Recomendaciones
+- **Análisis de gastos** por categoría
+- **Alertas críticas** para componentes en mal estado
+- **Consejos de ahorro** basados en patrones de gasto
+- **Predicciones de mantenimiento** próximos
 
-## 🎯 Próximas Funcionalidades
+### Gestión de Imágenes
+- **Imágenes de perfil** desde galería o cámara
+- **Vista previa en tiempo real** del vehículo seleccionado
+- **Sistema de imágenes** por tipo de vehículo
+- **Persistencia** de selecciones del usuario
 
-- [ ] Exportar datos a PDF con diseño profesional
-- [ ] Notificaciones push para mantenimientos próximos
-- [ ] Gráficos de gastos por vehículo y período
-- [ ] Sincronización con servidor en la nube
-- [ ] Modo oscuro/claro personalizable
-- [ ] Backup automático en Google Drive
-- [ ] Integración con calendario del sistema
-- [ ] Reconocimiento de voz para notas rápidas
+### Exportación y Reportes
+- **Reportes PDF** con diseño profesional
+- **Estadísticas detalladas** de gastos
+- **Historial completo** de mantenimientos
+- **Formato exportable** para contabilidad
+
+## 🔧 Configuración Técnica
+
+### Dependencias Principales
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  provider: ^6.1.1              # Gestión de estado
+  sqflite: ^2.3.0               # Base de datos SQLite
+  shared_preferences: ^2.2.2    # Preferencias del usuario
+  image_picker: ^1.0.4          # Selección de imágenes
+  pdf: ^3.10.7                  # Generación de PDFs
+  printing: ^5.11.1             # Impresión de documentos
+  fl_chart: ^0.68.0             # Gráficos y estadísticas
+```
+
+### Configuración Android
+- **Java 17** con Core Library Desugaring
+- **Gradle 8.12** para construcción optimizada
+- **Material Design 3** para interfaz moderna
+- **Pantalla completa** immersive
+
+## 📱 Capturas de Pantalla
+
+### Dashboard Principal
+- Vista general del vehículo con estado de componentes
+- Barras de progreso para aceite, llantas, frenos, batería
+- Información de kilometraje y próximo mantenimiento
+
+### Gestión de Vehículos
+- Formulario completo con vista previa de imagen
+- Sistema de marcas y modelos predeterminados
+- Opciones de personalización para casos especiales
+
+### Perfil del Usuario
+- Estadísticas detalladas de gastos
+- Recomendaciones inteligentes
+- Gestión de imagen de perfil
 
 ## 🤝 Contribuciones
 
@@ -198,24 +211,42 @@ Este proyecto está bajo la Licencia MIT. Ver el archivo `LICENSE` para más det
 **Johan Rojas**
 - GitHub: [@johan12rojas](https://github.com/johan12rojas)
 
+## 🎉 Changelog
+
+### v2.1.0 - SISTEMA COMPLETO DE VEHÍCULOS
+- ✨ **Formulario en pantalla completa** para agregar/editar vehículos
+- 🚗 **Sistema inteligente** de marcas y modelos predeterminados
+- 🎨 **Vista previa de imágenes** según tipo de vehículo
+- 🔧 **Corrección de errores** en edición de vehículos
+- 📱 **Notificaciones mejoradas** con mejor contraste visual
+- 💾 **Persistencia de imágenes** de perfil del usuario
+- 📊 **Recomendaciones inteligentes** basadas en gastos
+- 🎯 **Gestión completa** de vehículos (CRUD completo)
+
+### v2.0.0 - REDISEÑO COMPLETO
+- 🎨 **Interfaz completamente rediseñada** con gradientes elegantes
+- 📱 **Navegación moderna** con barra inferior estilizada
+- 🚨 **Sistema de alertas** mejorado
+- 📊 **Dashboard inteligente** con estadísticas
+- 🗄️ **Base de datos optimizada** con nuevas funcionalidades
+
 ## 📞 Soporte
 
-Si tienes preguntas o necesitas ayuda, puedes:
-- Abrir un issue en GitHub
+Si tienes preguntas o necesitas ayuda:
+- Abrir un [issue en GitHub](https://github.com/johan12rojas/APP-AUTOCAR/issues)
 - Contactar al desarrollador
 
 ---
 
 ⭐ **¡Dale una estrella al proyecto si te gusta!** ⭐
 
-## 🎉 Changelog
+## 🚀 Próximas Funcionalidades
 
-### v2.0.0 - MAJOR UI REDESIGN
-- ✨ Interfaz completamente rediseñada con Material Design 3
-- 🎨 Nuevo sistema de colores y tema oscuro elegante
-- 📱 Navegación por tabs con 4 secciones principales
-- 🚨 Sistema de alertas inteligente con prioridades
-- 📊 Monitoreo en tiempo real del estado de componentes
-- 🗄️ Base de datos mejorada con esquema v2
-- 🔧 Configuración técnica actualizada a Java 17
-- 📈 Optimizaciones de rendimiento y memoria
+- [ ] **Sincronización en la nube** para respaldo automático
+- [ ] **Notificaciones push** para recordatorios
+- [ ] **Integración con calendario** del sistema
+- [ ] **Modo offline** completo
+- [ ] **Gráficos avanzados** de tendencias de gastos
+- [ ] **Integración con talleres** locales
+- [ ] **Sistema de respaldo** automático
+- [ ] **Temas personalizables** adicionales
