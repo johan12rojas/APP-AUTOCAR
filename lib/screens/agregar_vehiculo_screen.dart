@@ -5,6 +5,7 @@ import '../theme/autocar_theme.dart';
 import '../widgets/background_widgets.dart';
 import '../viewmodels/vehiculo_viewmodel.dart';
 import '../services/vehicle_image_service.dart';
+import '../models/vehiculo.dart';
 
 class AgregarVehiculoScreen extends StatefulWidget {
   const AgregarVehiculoScreen({super.key});
@@ -665,14 +666,19 @@ class _AgregarVehiculoScreenState extends State<AgregarVehiculoScreen> {
       final viewModel = context.read<VehiculoViewModel>();
       
       try {
-            await viewModel.agregarVehiculo(
-              marca: _marcaController.text.trim(),
-              modelo: _modeloController.text.trim(),
-              ano: int.parse(_anoController.text.trim()),
-              placa: _placaController.text.trim().toUpperCase(),
-              tipo: VehicleImageService.getVehicleTypeForImage(_tipoSeleccionado),
-              kilometraje: int.parse(_kilometrajeController.text.trim()),
-            );
+        // Crear el vehículo usando Vehiculo.nuevo() directamente
+        final nuevoVehiculo = Vehiculo.nuevo(
+          marca: _marcaController.text.trim(),
+          modelo: _modeloController.text.trim(),
+          ano: int.parse(_anoController.text.trim()),
+          placa: _placaController.text.trim().toUpperCase(),
+          tipo: VehicleImageService.getVehicleTypeForImage(_tipoSeleccionado),
+          kilometraje: int.parse(_kilometrajeController.text.trim()),
+          imagenPersonalizada: null, // No hay imagen personalizada en este formulario
+        );
+        
+        // Usar el método que funciona en VehicleFormScreen
+        await viewModel.agregarVehiculo(nuevoVehiculo);
         
         Navigator.pop(context, true);
         

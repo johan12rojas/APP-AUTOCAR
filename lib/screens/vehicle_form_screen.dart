@@ -20,6 +20,7 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
   final _marcaController = TextEditingController();
   final _modeloController = TextEditingController();
   final _anoController = TextEditingController();
+  final _placaController = TextEditingController();
   final _kilometrajeController = TextEditingController();
   
   String _tipoSeleccionado = 'Carro';
@@ -35,6 +36,7 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
       // Modo edición
       _tipoSeleccionado = _getDisplayNameForType(widget.vehiculo!.tipo);
       _anoController.text = widget.vehiculo!.ano.toString();
+      _placaController.text = widget.vehiculo!.placa;
       _kilometrajeController.text = widget.vehiculo!.kilometraje.toString();
       
       // Cargar imagen personalizada si existe
@@ -48,16 +50,19 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
       if (marcasDisponibles.contains(widget.vehiculo!.marca)) {
         _marcaSeleccionada = widget.vehiculo!.marca;
         _esPersonalizado = false;
+        
+        // Verificar si el modelo está en la lista de modelos predeterminados
+        final modelosDisponibles = VehicleImageService.getModelsForBrandAndType(_marcaSeleccionada, _tipoSeleccionado);
+        if (modelosDisponibles.contains(widget.vehiculo!.modelo)) {
+          _modeloSeleccionado = widget.vehiculo!.modelo;
+        } else {
+          _modeloSeleccionado = 'Personalizado';
+          _modeloController.text = widget.vehiculo!.modelo;
+        }
       } else {
         _esPersonalizado = true;
         _marcaController.text = widget.vehiculo!.marca;
-      }
-      
-      // Verificar si el modelo está en la lista de modelos predeterminados
-      final modelosDisponibles = VehicleImageService.getModelsForBrandAndType(_marcaSeleccionada, _tipoSeleccionado);
-      if (modelosDisponibles.contains(widget.vehiculo!.modelo)) {
-        _modeloSeleccionado = widget.vehiculo!.modelo;
-      } else {
+        _marcaSeleccionada = 'Personalizado';
         _modeloSeleccionado = 'Personalizado';
         _modeloController.text = widget.vehiculo!.modelo;
       }
@@ -182,6 +187,18 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
                 ],
               ],
             ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(
+                  child: _buildOpcionImagen(
+                    icon: Icons.restore,
+                    titulo: 'Imagen por defecto',
+                    onTap: _usarImagenPorDefecto,
+                  ),
+                ),
+              ],
+            ),
             const SizedBox(height: 20),
           ],
         ),
@@ -247,6 +264,13 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
     Navigator.pop(context);
   }
 
+  void _usarImagenPorDefecto() {
+    setState(() {
+      _imagenSeleccionada = null;
+    });
+    Navigator.pop(context);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -286,6 +310,8 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
                         _buildModelSelector(),
                         const SizedBox(height: 20),
                         _buildYearField(),
+                        const SizedBox(height: 20),
+                        _buildPlacaField(),
                         const SizedBox(height: 20),
                         _buildMileageField(),
                         const SizedBox(height: 30),
@@ -655,7 +681,7 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
           ),
         ),
         const SizedBox(height: 10),
-        TextField(
+        TextFormField(
           controller: _anoController,
           keyboardType: TextInputType.number,
           style: const TextStyle(color: Colors.white, fontSize: 16),
@@ -675,6 +701,68 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
               borderSide: const BorderSide(color: Color(0xFFFF6B35)),
             ),
           ),
+          validator: (value) {
+            if (value == null || value.isEmpty) {
+              return 'El año es obligatorio';
+            }
+            final anio = int.tryParse(value);
+            if (anio == null) {
+              return 'Ingresa un año válido';
+            }
+            if (anio < 1900 || anio > DateTime.now().year + 1) {
+              return 'Ingresa un año válido';
+            }
+            return null;
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPlacaField() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Placa',
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 10),
+        TextFormField(
+          controller: _placaController,
+          textCapitalization: TextCapitalization.characters,
+          style: const TextStyle(color: Colors.white, fontSize: 16),
+          decoration: InputDecoration(
+            hintText: 'Ej: ABC123',
+            hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.6)),
+            filled: true,
+            fillColor: Colors.white.withValues(alpha: 0.1),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.2)),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.2)),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: Color(0xFFFF6B35)),
+            ),
+          ),
+          validator: (value) {
+            if (value == null || value.isEmpty) {
+              return 'La placa es obligatoria';
+            }
+            if (value.length < 3) {
+              return 'La placa debe tener al menos 3 caracteres';
+            }
+            return null;
+          },
         ),
       ],
     );
@@ -693,7 +781,7 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
           ),
         ),
         const SizedBox(height: 10),
-        TextField(
+        TextFormField(
           controller: _kilometrajeController,
           keyboardType: TextInputType.number,
           style: const TextStyle(color: Colors.white, fontSize: 16),
@@ -713,6 +801,19 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
               borderSide: const BorderSide(color: Color(0xFFFF6B35)),
             ),
           ),
+          validator: (value) {
+            if (value == null || value.isEmpty) {
+              return 'El kilometraje es obligatorio';
+            }
+            final kilometraje = int.tryParse(value);
+            if (kilometraje == null) {
+              return 'Ingresa un kilometraje válido';
+            }
+            if (kilometraje < 0) {
+              return 'El kilometraje no puede ser negativo';
+            }
+            return null;
+          },
         ),
       ],
     );
@@ -779,30 +880,32 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
     try {
       final viewModel = context.read<VehiculoViewModel>();
       
-      final nuevoVehiculo = Vehiculo(
-        id: widget.vehiculo?.id,
-        marca: marca,
-        modelo: modelo,
-        ano: int.parse(_anoController.text),
-        placa: widget.vehiculo?.placa ?? 'N/A',
-        tipo: _getTypeForDatabase(_tipoSeleccionado),
-        kilometraje: int.parse(_kilometrajeController.text),
-        imagenPersonalizada: _imagenSeleccionada?.path,
-        maintenance: widget.vehiculo?.maintenance ?? {},
-        createdAt: widget.vehiculo?.createdAt ?? DateTime.now(),
-      );
+      final nuevoVehiculo = widget.vehiculo == null 
+        ? Vehiculo.nuevo(
+            marca: marca,
+            modelo: modelo,
+            ano: int.parse(_anoController.text),
+            placa: _placaController.text.trim().toUpperCase(),
+            tipo: _getTypeForDatabase(_tipoSeleccionado),
+            kilometraje: int.parse(_kilometrajeController.text),
+            imagenPersonalizada: _imagenSeleccionada?.path,
+          )
+        : Vehiculo(
+            id: widget.vehiculo!.id,
+            marca: marca,
+            modelo: modelo,
+            ano: int.parse(_anoController.text),
+            placa: _placaController.text.trim().toUpperCase(),
+            tipo: _getTypeForDatabase(_tipoSeleccionado),
+            kilometraje: int.parse(_kilometrajeController.text),
+            imagenPersonalizada: _imagenSeleccionada?.path,
+            maintenance: widget.vehiculo!.maintenance,
+            createdAt: widget.vehiculo!.createdAt,
+          );
       
       if (widget.vehiculo == null) {
         // Agregar nuevo vehículo
-        await viewModel.agregarVehiculo(
-          marca: marca,
-          modelo: modelo,
-          ano: int.parse(_anoController.text),
-          placa: 'N/A',
-          tipo: _getTypeForDatabase(_tipoSeleccionado),
-          kilometraje: int.parse(_kilometrajeController.text),
-          imagenPersonalizada: _imagenSeleccionada?.path,
-        );
+        await viewModel.agregarVehiculo(nuevoVehiculo);
         _showSuccessMessage('Vehículo agregado correctamente');
       } else {
         // Actualizar vehículo existente
@@ -847,6 +950,7 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
     _marcaController.dispose();
     _modeloController.dispose();
     _anoController.dispose();
+    _placaController.dispose();
     _kilometrajeController.dispose();
     super.dispose();
   }

@@ -10,6 +10,7 @@ import '../services/vehicle_image_service.dart';
 import '../services/user_preferences_service.dart';
 import '../services/pdf_export_service.dart';
 import 'vehicle_form_screen.dart';
+import 'agregar_vehiculo_screen.dart';
 
 class PerfilScreen extends StatefulWidget {
   const PerfilScreen({super.key});

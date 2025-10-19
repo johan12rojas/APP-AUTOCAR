@@ -93,8 +93,29 @@ class VehiculoViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  // Agregar nuevo vehículo
-  Future<void> agregarVehiculo({
+  // Agregar nuevo vehículo (versión con objeto Vehiculo)
+  Future<void> agregarVehiculo(Vehiculo nuevoVehiculo) async {
+    _setLoading(true);
+    try {
+      final id = await _databaseHelper.insertVehiculo(nuevoVehiculo);
+      final vehiculoConId = nuevoVehiculo.copyWith(id: id);
+      
+      _vehiculos.add(vehiculoConId);
+      if (_vehiculoActual == null) {
+        _vehiculoActual = vehiculoConId;
+        await cargarMantenimientos();
+      }
+      _clearError();
+      notifyListeners();
+    } catch (e) {
+      _setError('Error al agregar vehículo: $e');
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  // Agregar nuevo vehículo (versión con parámetros individuales)
+  Future<void> agregarVehiculoFromParams({
     required String marca,
     required String modelo,
     required int ano,

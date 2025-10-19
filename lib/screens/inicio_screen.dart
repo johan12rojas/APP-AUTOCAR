@@ -248,19 +248,35 @@ class _InicioScreenState extends State<InicioScreen> {
                   ),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(15),
-                    child: Image.asset(
-                      vehiculo.tipo == 'carro' 
-                        ? 'assets/images/vehicles/car_default.png'
-                        : 'assets/images/vehicles/motorcycle.png',
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        return Icon(
-                          vehiculo.tipo.contains('moto') ? Icons.motorcycle : Icons.directions_car,
-                          color: Colors.white,
-                          size: 35,
-                        );
-                      },
-                    ),
+                    child: vehiculo.imagenPersonalizada != null && vehiculo.imagenPersonalizada!.isNotEmpty
+                        ? Image.file(
+                            File(vehiculo.imagenPersonalizada!),
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Image.asset(
+                                VehicleImageService.getVehicleImagePath(vehiculo.tipo),
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) {
+                                  return Icon(
+                                    vehiculo.tipo.contains('moto') ? Icons.motorcycle : Icons.directions_car,
+                                    color: Colors.white,
+                                    size: 35,
+                                  );
+                                },
+                              );
+                            },
+                          )
+                        : Image.asset(
+                            VehicleImageService.getVehicleImagePath(vehiculo.tipo),
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Icon(
+                                vehiculo.tipo.contains('moto') ? Icons.motorcycle : Icons.directions_car,
+                                color: Colors.white,
+                                size: 35,
+                              );
+                            },
+                          ),
                   ),
                 ),
                 const SizedBox(height: 10),
