@@ -4,6 +4,7 @@ import 'bitacora_screen.dart';
 import 'alertas_screen.dart';
 import 'perfil_screen.dart';
 import '../widgets/background_widgets.dart';
+import '../widgets/chatbot_floating_button.dart';
 
 class MainNavigationScreen extends StatefulWidget {
   const MainNavigationScreen({super.key});
@@ -25,8 +26,13 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: BackgroundGradientWidget(
-        child: _screens[_currentIndex],
+      body: Stack(
+        children: [
+          BackgroundGradientWidget(
+            child: _screens[_currentIndex],
+          ),
+          const ChatbotFloatingButton(),
+        ],
       ),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
