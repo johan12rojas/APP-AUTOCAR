@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 import '../viewmodels/vehiculo_viewmodel.dart';
 import '../services/openai_service.dart';
 import '../models/mantenimiento.dart';
+import '../data/gas_station_data.dart';
+import 'map_screen.dart';
 
 class ChatbotScreen extends StatefulWidget {
   const ChatbotScreen({super.key});
@@ -57,6 +59,15 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
     });
   }
 
+  void _openMapInterface() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const MapScreen(),
+      ),
+    );
+  }
+
   void _showWelcomeMessage(VehiculoViewModel viewModel) {
     if (_messages.isEmpty) {
       final vehiculo = viewModel.vehiculoActual;
@@ -108,6 +119,12 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
     });
 
     try {
+      // Verificar si el usuario pregunta sobre gasolineras
+      if (_isGasStationQuery(userMessage)) {
+        _handleGasStationQuery(userMessage);
+        return;
+      }
+
       // Obtener información del vehículo actual
       final viewModel = context.read<VehiculoViewModel>();
       final vehiculo = viewModel.vehiculoActual;
@@ -139,6 +156,44 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
         });
       }
     }
+  }
+
+  bool _isGasStationQuery(String message) {
+    final lowerMessage = message.toLowerCase();
+    return lowerMessage.contains('gasolinera') ||
+           lowerMessage.contains('gasolina') ||
+           lowerMessage.contains('combustible') ||
+           lowerMessage.contains('estación') ||
+           lowerMessage.contains('tanquear') ||
+           lowerMessage.contains('cargar gasolina');
+  }
+
+  void _handleGasStationQuery(String userMessage) {
+    final gasStations = GasStationData.getGasStations();
+    final nearestStations = GasStationData.getNearestGasStations(7.882018, -72.501954, count: 5);
+    
+    String response = "⛽ **Información sobre Gasolineras en Cúcuta**\n\n";
+    response += "Tenemos información de **${gasStations.length} gasolineras** en la ciudad.\n\n";
+    
+    response += "**Las 5 gasolineras más cercanas al centro:**\n";
+    for (int i = 0; i < nearestStations.length; i++) {
+      final station = nearestStations[i];
+      final distance = GasStationData.calculateDistance(7.882018, -72.501954, station.latitude, station.longitude);
+      response += "${i + 1}. **${station.name}** (${station.brand})\n";
+      response += "   📍 ${station.location}\n";
+      response += "   📏 ${distance.toStringAsFixed(1)} km\n\n";
+    }
+    
+    response += "**Marcas disponibles:**\n";
+    final brands = gasStations.map((s) => s.brand).toSet().toList();
+    response += brands.join(", ") + "\n\n";
+    
+    response += "💡 **Tip:** Puedes usar el mapa para ver todas las gasolineras y sus rutas. Solo activa el modo 'Solo Gasolineras' con el botón ⛽ en el mapa.";
+    
+    _addBotMessage(response);
+    setState(() {
+      _isLoading = false;
+    });
   }
 
   @override
@@ -220,7 +275,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
-                  'AutoCar Assistant',
+                  'Torky - Asistente Vehicular',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 18,
@@ -489,7 +544,31 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
               ),
             ),
           ),
-          const SizedBox(width: 15),
+          const SizedBox(width: 10),
+          // Botón de ubicación
+          Container(
+            width: 50,
+            height: 50,
+            decoration: BoxDecoration(
+              color: const Color(0xFF1A1A2E),
+              borderRadius: BorderRadius.circular(25),
+              border: Border.all(
+                color: Colors.white.withOpacity(0.2),
+                width: 1,
+              ),
+            ),
+            child: IconButton(
+              onPressed: _openMapInterface,
+              icon: const Icon(
+                Icons.location_on,
+                color: Colors.white,
+                size: 24,
+              ),
+              tooltip: 'Ver talleres en mapa',
+            ),
+          ),
+          const SizedBox(width: 10),
+          // Botón de enviar
           Container(
             width: 50,
             height: 50,

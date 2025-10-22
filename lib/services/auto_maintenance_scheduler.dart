@@ -1,6 +1,7 @@
 import '../models/vehiculo.dart';
 import '../models/mantenimiento.dart';
 import '../database/database_helper.dart';
+import 'maintenance_data_service.dart';
 
 class AutoMaintenanceScheduler {
   static final DatabaseHelper _dbHelper = DatabaseHelper();
@@ -57,14 +58,17 @@ class AutoMaintenanceScheduler {
     final diasRestantes = (kmRestantes / 50).round(); // Asumiendo 50 km/día promedio
     final fechaSugerida = DateTime.now().add(Duration(days: diasRestantes.clamp(1, 30)));
 
+    // Obtener datos específicos del mantenimiento para Cúcuta
+    final maintenanceInfo = MaintenanceDataService.getMaintenanceInfo(categoria);
+    
     final mantenimiento = Mantenimiento(
       vehiculoId: vehiculo.id!,
       tipo: categoria,
       fecha: fechaSugerida,
       kilometraje: dueKm,
-      notas: 'Mantenimiento automático programado por el sistema',
-      costo: 0.0,
-      ubicacion: '',
+      notas: maintenanceInfo?.descripcion ?? 'Mantenimiento automático programado por el sistema',
+      costo: maintenanceInfo?.costoEstimado.toDouble() ?? 0.0,
+      ubicacion: maintenanceInfo?.tallerRecomendado ?? '',
       status: status,
     );
 

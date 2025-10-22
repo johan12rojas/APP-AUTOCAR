@@ -1,136 +1,18 @@
-import 'dart:convert';
-import 'package:http/http.dart' as http;
 import '../models/vehiculo.dart';
 import '../models/mantenimiento.dart';
 import '../database/database_helper.dart';
 
 class OpenAIService {
-  static const String _apiKey = 'TU_API_KEY_AQUI'; // Reemplaza con tu API key de OpenAI
-  static const String _baseUrl = 'https://api.openai.com/v1/chat/completions';
 
   static Future<String> getChatResponse({
     required String userMessage,
     Vehiculo? vehiculo,
     List<Mantenimiento>? mantenimientos,
   }) async {
-    try {
-      print('Iniciando solicitud a OpenAI...');
-      print('Mensaje del usuario: $userMessage');
-      print('Vehículo: ${vehiculo?.marca} ${vehiculo?.modelo}');
-      
-      // Construir el contexto del vehículo y mantenimientos
-      String vehicleContext = _buildVehicleContext(vehiculo, mantenimientos);
-      
-      // Crear el mensaje del sistema con el contexto
-      String systemMessage = '''Eres un asistente especializado en mantenimiento vehicular para la aplicación AutoCar. 
-Tu función es ayudar exclusivamente con temas relacionados a vehículos y su mantenimiento.
-
-CONTEXTO DEL VEHÍCULO ACTUAL:
-$vehicleContext
-
-INSTRUCCIONES:
-1. Responde ÚNICAMENTE sobre temas relacionados a vehículos y mantenimiento
-2. Usa la información del vehículo actual para dar consejos personalizados
-3. Si no tienes información específica del vehículo, da consejos generales
-4. Mantén un tono profesional pero amigable
-5. Si el usuario pregunta algo no relacionado a vehículos, responde que solo puedes ayudar con temas automotrices
-6. Responde en español
-7. Sé conciso pero informativo
-8. Si es necesario, pregunta por más detalles del vehículo
-
-RESPUESTA:''';
-
-      print('Enviando solicitud HTTP...');
-      print('URL: $_baseUrl');
-      print('API Key (primeros 10 caracteres): ${_apiKey.substring(0, 10)}...');
-      
-      final response = await http.post(
-        Uri.parse(_baseUrl),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $_apiKey',
-        },
-        body: json.encode({
-          'model': 'gpt-3.5-turbo',
-          'messages': [
-            {
-              'role': 'system',
-              'content': systemMessage,
-            },
-            {
-              'role': 'user',
-              'content': userMessage,
-            },
-          ],
-          'max_tokens': 500,
-          'temperature': 0.7,
-        }),
-      );
-
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        return data['choices'][0]['message']['content'].trim();
-      } else {
-        print('Error en la API de OpenAI: ${response.statusCode}');
-        print('Respuesta: ${response.body}');
-        print('Headers: ${response.headers}');
-        
-        // Mensajes de error más específicos
-        if (response.statusCode == 401) {
-          return 'Error de autenticación con la API de OpenAI. Verifica la clave API.';
-        } else if (response.statusCode == 429) {
-          // Proporcionar respuesta básica cuando la cuota está excedida
-          return _getBasicVehicleResponse(userMessage, vehiculo);
-        } else if (response.statusCode == 500) {
-          return 'Error interno del servidor de OpenAI. Intenta de nuevo más tarde.';
-        } else {
-          return 'Error en la API de OpenAI (${response.statusCode}). Intenta de nuevo más tarde.';
-        }
-      }
-    } catch (e) {
-      print('Error al conectar con OpenAI: $e');
-      return 'Lo siento, hay un problema de conexión. Por favor, verifica tu conexión a internet e intenta de nuevo.';
-    }
+    // Usar solo respuestas locales sin OpenAI
+    return _getBasicVehicleResponse(userMessage, vehiculo);
   }
 
-  static String _buildVehicleContext(Vehiculo? vehiculo, List<Mantenimiento>? mantenimientos) {
-    if (vehiculo == null) {
-      return 'No hay información de vehículo disponible. El usuario puede no tener un vehículo registrado.';
-    }
-
-    String context = '''
-VEHÍCULO ACTUAL:
-- Marca: ${vehiculo.marca}
-- Modelo: ${vehiculo.modelo}
-- Año: ${vehiculo.ano}
-- Kilometraje: ${vehiculo.kilometraje.toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},')} km
-- Placa: ${vehiculo.placa}
-- Tipo: ${vehiculo.tipo}
-''';
-
-    if (mantenimientos?.isNotEmpty == true) {
-      context += '\nMANTENIMIENTOS RECIENTES:\n';
-      for (var mantenimiento in mantenimientos!.take(5)) {
-        context += '- ${mantenimiento.tipoDisplayName}: ${mantenimiento.notas} (${mantenimiento.fecha.toString().split(' ')[0]})\n';
-        if (mantenimiento.costo > 0) {
-          context += '  Costo: \$${mantenimiento.costo.toStringAsFixed(2)}\n';
-        }
-      }
-    } else {
-      context += '\nNo hay mantenimientos registrados recientemente.';
-    }
-
-    // Agregar información de mantenimientos programados
-    if (vehiculo.maintenance.isNotEmpty) {
-      context += '\nESTADO DE MANTENIMIENTOS PROGRAMADOS:\n';
-      vehiculo.maintenance.forEach((key, value) {
-        String status = value.percentage <= 30 ? 'VENCIDO' : 'AL DÍA';
-        context += '- $key: $status (${value.percentage.toStringAsFixed(0)}% vida útil)\n';
-      });
-    }
-
-    return context;
-  }
 
   static Future<List<Mantenimiento>> getRecentMaintenances(int vehiculoId) async {
     try {
@@ -163,9 +45,31 @@ VEHÍCULO ACTUAL:
     }
   }
 
+  // Función para verificar si la pregunta es relacionada a vehículos
+  static bool _isVehicleRelatedQuestion(String message) {
+    final vehicleKeywords = [
+      'auto', 'carro', 'moto', 'vehículo', 'mantenimiento', 'aceite', 'freno', 'llanta',
+      'neumático', 'batería', 'motor', 'taller', 'mecánico', 'reparar', 'servicio',
+      'kilometraje', 'gasolina', 'combustible', 'transmisión', 'suspensión', 'refrigerante',
+      'filtro', 'bujía', 'amortiguador', 'dirección', 'frenos', 'pastillas', 'disco',
+      'rotor', 'líquido', 'fluido', 'cambio', 'revisión', 'diagnóstico', 'problema',
+      'falla', 'ruido', 'vibración', 'temperatura', 'calentamiento', 'arranque',
+      'eléctrico', 'alternador', 'generador', 'caja', 'embrague', 'neumático',
+      'presión', 'alineación', 'balanceo', 'rotación', 'dibujo', 'desgaste',
+      'estadística', 'costo', 'precio', 'gasto', 'presupuesto', 'dinero'
+    ];
+    
+    return vehicleKeywords.any((keyword) => message.contains(keyword));
+  }
+
   // Función de respaldo para cuando la API no está disponible
   static String _getBasicVehicleResponse(String userMessage, Vehiculo? vehiculo) {
     final message = userMessage.toLowerCase();
+    
+    // Verificar si la pregunta es sobre vehículos
+    if (!_isVehicleRelatedQuestion(message)) {
+      return 'Hola! Soy Torky, tu asistente vehicular. Solo puedo ayudarte con temas relacionados al mantenimiento de tu vehículo y la aplicación AutoCar. ¿En qué puedo asistirte con tu automóvil?';
+    }
     
     // Información del vehículo actual
     String vehicleInfo = '';
@@ -175,7 +79,7 @@ VEHÍCULO ACTUAL:
     
     // Saludos y presentación
     if (message.contains('hola') || message.contains('saludo') || message.contains('hi') || message.contains('hey')) {
-      return '¡Hola! 👋 Soy CARLO, tu asistente mecánico de AutoCar.\n\nMe encanta ayudarte con todo lo relacionado con tu vehículo. Soy especialista en mantenimiento automotriz y conozco muy bien el mercado de Cúcuta.\n\n$vehicleInfo\n\n¿En qué puedo ayudarte hoy? Puedes preguntarme sobre:\n• Mantenimientos programados\n• Cambio de aceite\n• Sistema de frenos\n• Neumáticos\n• Batería\n• Costos en Cúcuta\n• Diagnósticos básicos\n• Estadísticas de mantenimiento';
+      return '¡Hola! 👋 Soy Torky, tu asistente mecánico de AutoCar.\n\nMe encanta ayudarte con todo lo relacionado con tu vehículo. Soy especialista en mantenimiento automotriz y conozco muy bien el mercado de Cúcuta.\n\n$vehicleInfo\n\n¿En qué puedo ayudarte hoy? Puedes preguntarme sobre:\n• Mantenimientos programados\n• Cambio de aceite\n• Sistema de frenos\n• Neumáticos\n• Batería\n• Costos en Cúcuta\n• Diagnósticos básicos\n• Estadísticas de mantenimiento';
     }
     
     // Aceite y lubricación
@@ -235,7 +139,7 @@ VEHÍCULO ACTUAL:
     
     // Talleres y recomendaciones
     else if (message.contains('taller') || message.contains('talleres') || message.contains('mecánico') || message.contains('donde') || message.contains('dónde') || message.contains('recomendación') || message.contains('recomendaciones')) {
-      return '🔧 Talleres Recomendados en Cúcuta\n\n¡Perfecto! Te recomiendo los mejores talleres según tu necesidad:\n\nFRENOS Y SUSPENSIÓN:\n• Tecnifrenos Ruz - Especialistas en frenos\n• Serviautos Jairo - Frenos y alineación (Calle 16 N°5-110)\n• Taller Automotriz AJ - Suspensión y frenos (Av. 5 #25-66)\n\nLLANTAS Y ALINEACIÓN:\n• Tecnillantas Cúcuta - Montaje y balanceo (Diagonal Santander N° 6A-10)\n• Sincrolibertadores - Alineación especializada (Calle 2A N°13E-30)\n• Serviautos Jairo - Alineación y balanceo\n\nMANTENIMIENTO GENERAL:\n• V.I.P. CAR\'S - Serviteca y mecánica (Av. 3 #14-80)\n• Taller Ecoautos - Lubricación y mantenimiento (Calle 1N #0a-85)\n• Taller Arteautos - Mantenimiento preventivo (Av. 4 #7-50)\n\nELECTRICIDAD Y BATERÍAS:\n• Electripartes La Frontera - Electricidad automotriz (Calle 1 #5-39)\n• Casa de Baterías Eléctricos T - Baterías y repuestos\n\nMOTORES Y DIAGNÓSTICO:\n• Oriolicar Taller - Mecánica gasolina/diésel\n• Autolab - Diagnóstico especializado\n• Sincrolibertadores - Sincronización\n\nEMERGENCIAS:\n• Maquiautos - Grúas y remolque (Av. 6)\n• Los Wichos - Mecánica y repuestos (Canal de Bogotá)\n\n$vehicleInfo\n\n¿Qué tipo de servicio necesitas?';
+      return '🔧 Talleres Recomendados en Cúcuta\n\n¡Perfecto! Te recomiendo los mejores talleres según tu necesidad:\n\nFRENOS Y SUSPENSIÓN:\n• Serviautos Jairo - Frenos y alineación (Corral de Piedra, Sevilla)\n• Taller El Paisa - Frenos y suspensión (Cl 2N #7E-12, Los Caobos)\n• Taller La Rueda - Alineación y balanceo (Cl 9 #2E-23, Loma de Bolivar)\n\nLLANTAS Y ALINEACIÓN:\n• Taller La Rueda - Alineación, balanceo, frenos, llantas\n• Taller Auto Express - Alineación y balanceo (Av 6E #12-45, La Playa)\n• Taller Auto Norte - Alineación (Av Libertadores, frente a Ventura Plaza)\n\nMANTENIMIENTO GENERAL:\n• Taller La 10 - Mantenimiento preventivo (Calle 10 #2E-45, La Riviera)\n• Taller Los Hermanos - Aceite, frenos, baterías (Av 9E #14-70, La Playa)\n• Taller Servitec - Servicios integrales (Av 8E con Cl 12, Loma de Bolivar)\n\nELECTRICIDAD Y BATERÍAS:\n• Taller Don Luis - Electricidad automotriz (Calle 11 con Av 5E, Blanco)\n• Moto Repuestos La Union - Baterías (Barrio La Union)\n• Taller El Motorista - Baterías (Av 7 con Calle 9, La Playa)\n\nMOTORES Y DIAGNÓSTICO:\n• Taller Turbo Diesel - Especialistas en diesel (Av 1 con Calle 3N, San Andresito)\n• Taller El Dieselero - Diesel y refrigerantes (Av 1E #3N-12, San Andresito)\n• Moto Center Norte - Mantenimiento general (Calle 5N #7E-20, San Luis)\n\nMOTOS:\n• Taller El Motorista - Especialistas en motos (Av 7 con Calle 9, La Playa)\n• Moto Repuestos La Union - Repuestos de motos (Barrio La Union)\n• Moto Taller Sevilla - Servicio de motos (Barrio Sevilla)\n• Moto Servicio El Amigo - Mantenimiento de motos\n• Moto Center Norte - Mantenimiento general de motos\n• Moto Servicio El Viejo - Servicio especializado (Barrio Aeropuerto)\n• Taller Servi Motor - Motos (Av 2E con Calle 7, Blanco)\n• Taller Moto Power - Motos (Av 5 con Cl 8, La Playa)\n\n📍 Puedes ver todos estos talleres en el mapa interactivo presionando el botón de ubicación (📍) al lado del botón de envío o en Inicio > Ubicación.\n\n$vehicleInfo\n\n¿Qué tipo de servicio necesitas?';
     }
     
     // Motos
@@ -255,7 +159,7 @@ VEHÍCULO ACTUAL:
     
     // Respuesta por defecto mejorada
     else {
-      return '🤖 CARLO - Modo Básico\n\n¡Hola! Soy CARLO, tu asistente mecánico. Aunque estoy funcionando en modo básico, puedo ayudarte con mucha información valiosa.\n\n$vehicleInfo\n\nPuedo ayudarte con:\n\n🔧 Mantenimiento:\n• Cambio de aceite y filtros\n• Sistema de frenos\n• Neumáticos y llantas\n• Batería y eléctrico\n\n🔍 Diagnósticos:\n• Problemas comunes\n• Ruidos y señales\n• Luces de advertencia\n• Rendimiento del motor\n\n💰 Costos en Cúcuta:\n• Presupuestos en pesos colombianos\n• Precios de repuestos locales\n• Talleres recomendados\n\n🏪 Talleres Especializados:\n• Frenos: Tecnifrenos Ruz, Serviautos Jairo\n• Llantas: Tecnillantas Cúcuta, Sincrolibertadores\n• Electricidad: Electripartes La Frontera\n• Motos: Estándar Motos, Full Motos Cúcuta\n\n📊 Estadísticas:\n• Datos del mercado colombiano\n• Análisis de costos\n• Frecuencia de servicios\n\n⚙️ Especializados:\n• Suspensión\n• Transmisión\n• Sistema de refrigeración\n• Filtros y fluidos\n\n¿Sobre qué tema específico te gustaría información?';
+      return '🤖 Torky - Asistente Vehicular\n\n¡Hola! Soy Torky, tu asistente mecánico. Puedo ayudarte con mucha información valiosa sobre tu vehículo.\n\n$vehicleInfo\n\nPuedo ayudarte con:\n\n🔧 Mantenimiento:\n• Cambio de aceite y filtros\n• Sistema de frenos\n• Neumáticos y llantas\n• Batería y eléctrico\n\n🔍 Diagnósticos:\n• Problemas comunes\n• Ruidos y señales\n• Luces de advertencia\n• Rendimiento del motor\n\n💰 Costos en Cúcuta:\n• Presupuestos en pesos colombianos\n• Precios de repuestos locales\n• Talleres recomendados\n\n🏪 Talleres Especializados:\n• Frenos: Serviautos Jairo, Taller El Paisa\n• Llantas: Taller La Rueda, Taller Auto Express\n• Electricidad: Taller Don Luis, Moto Repuestos La Union\n• Motos: Taller El Motorista, Moto Center Norte\n\n📍 Puedes ver todos los talleres de Cúcuta en un mapa interactivo presionando el botón de ubicación (📍) al lado del botón de envío o en Inicio > Ubicación.\n\n📊 Estadísticas:\n• Datos del mercado colombiano\n• Análisis de costos\n• Frecuencia de servicios\n\n⚙️ Especializados:\n• Suspensión\n• Transmisión\n• Sistema de refrigeración\n• Filtros y fluidos\n\n¿Sobre qué tema específico te gustaría información?';
     }
   }
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'dart:io';
 import '../models/mantenimiento.dart';
 import '../models/vehiculo.dart';
 import '../database/database_helper.dart';
@@ -7,6 +8,7 @@ import '../viewmodels/vehiculo_viewmodel.dart';
 import '../theme/autocar_theme.dart';
 import '../widgets/background_widgets.dart';
 import '../services/auto_maintenance_scheduler.dart';
+import '../services/vehicle_image_service.dart';
 import 'agendar_mantenimiento_screen.dart';
 
 class BitacoraScreen extends StatefulWidget {
@@ -23,10 +25,10 @@ class _BitacoraScreenState extends State<BitacoraScreen> with TickerProviderStat
   String _filtroActual = 'Todos';
   
   final Map<String, String> _filtros = {
-    'Todos': 'Todos',
-    'Completados': 'Completados', 
-    'Pendientes': 'Pendientes',
-    'Urgentes': 'Urgentes',
+    'Todos': 'Todo',
+    'Completados': 'Hecho', 
+    'Pendientes': 'Pend.',
+    'Urgentes': 'Urgente',
   };
 
   @override
@@ -344,7 +346,13 @@ class _BitacoraScreenState extends State<BitacoraScreen> with TickerProviderStat
             _filtroActual = _filtros.keys.elementAt(index);
           });
         },
-        tabs: _filtros.keys.map((filtro) => Tab(text: filtro)).toList(),
+        tabs: _filtros.keys.map((filtro) => Tab(
+          child: Text(
+            filtro,
+            style: const TextStyle(fontSize: 12),
+            overflow: TextOverflow.ellipsis,
+          ),
+        )).toList(),
       ),
     );
   }
@@ -454,8 +462,22 @@ class _BitacoraScreenState extends State<BitacoraScreen> with TickerProviderStat
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFFF6B35),
+                  gradient: const LinearGradient(
+                    colors: [
+                      Color(0xFFFF6B35),
+                      Color(0xFFFF8A65),
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
                   borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFFFF6B35).withOpacity(0.3),
+                      blurRadius: 4,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
                 ),
                 child: Text(
                   '${mantenimiento.kilometraje.toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},')} km',
@@ -517,10 +539,27 @@ class _BitacoraScreenState extends State<BitacoraScreen> with TickerProviderStat
                   icon: Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: Colors.green,
+                      color: Colors.white,
                       borderRadius: BorderRadius.circular(8),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.1),
+                          blurRadius: 4,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
                     ),
-                    child: const Icon(Icons.check, size: 16, color: Colors.white),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Colors.green, Colors.greenAccent],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: const Icon(Icons.check, size: 16, color: Colors.white),
+                    ),
                   ),
                 ),
                 const SizedBox(width: 8),
@@ -530,10 +569,27 @@ class _BitacoraScreenState extends State<BitacoraScreen> with TickerProviderStat
                 icon: Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: Colors.blueAccent,
+                    color: Colors.white,
                     borderRadius: BorderRadius.circular(8),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.1),
+                        blurRadius: 4,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
                   ),
-                  child: const Icon(Icons.edit, size: 16, color: Colors.white),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Colors.blue, Colors.blueAccent],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: const Icon(Icons.edit, size: 16, color: Colors.white),
+                  ),
                 ),
               ),
               const SizedBox(width: 8),
@@ -542,10 +598,27 @@ class _BitacoraScreenState extends State<BitacoraScreen> with TickerProviderStat
                 icon: Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: Colors.red,
+                    color: Colors.white,
                     borderRadius: BorderRadius.circular(8),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.1),
+                        blurRadius: 4,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
                   ),
-                  child: const Icon(Icons.delete, size: 16, color: Colors.white),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Colors.red, Colors.redAccent],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: const Icon(Icons.delete, size: 16, color: Colors.white),
+                  ),
                 ),
               ),
             ],
@@ -569,12 +642,12 @@ class _BitacoraScreenState extends State<BitacoraScreen> with TickerProviderStat
       case 'tires': return 'assets/images/maintenance/tire_rotation.png';
       case 'brakes': return 'assets/images/maintenance/brake_service.png';
       case 'battery': return 'assets/images/maintenance/battery_check.png';
-      case 'coolant': return 'assets/images/maintenance/engine_service.png';
+      case 'coolant': return 'assets/images/maintenance/refrigerante.png';
       case 'airFilter': return 'assets/images/maintenance/air_filter.png';
-      case 'alignment': return 'assets/images/maintenance/transmission.png';
-      case 'chain': return 'assets/images/maintenance/transmission.png';
+      case 'alignment': return 'assets/images/maintenance/ali_bal.png';
+      case 'chain': return 'assets/images/maintenance/kitarrastre.png';
       case 'sparkPlug': return 'assets/images/maintenance/spark_plugs.png';
-      default: return 'assets/images/maintenance/engine_service.png';
+      default: return 'assets/images/maintenance/oil_change.png';
     }
   }
 
@@ -645,19 +718,35 @@ class _BitacoraScreenState extends State<BitacoraScreen> with TickerProviderStat
                 ),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(8),
-                  child: Image.asset(
-                    vehiculo.tipo == 'carro'
-                        ? 'assets/images/vehicles/car_default.png'
-                        : 'assets/images/vehicles/motorcycle.png',
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) {
-                      return Icon(
-                        vehiculo.tipo == 'carro' ? Icons.directions_car : Icons.motorcycle,
-                        size: 30,
-                        color: Colors.blue,
-                      );
-                    },
-                  ),
+                  child: vehiculo.imagenPersonalizada != null && vehiculo.imagenPersonalizada!.isNotEmpty
+                      ? Image.file(
+                          File(vehiculo.imagenPersonalizada!),
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Image.asset(
+                              VehicleImageService.getVehicleImagePath(vehiculo.tipo),
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) {
+                                return Icon(
+                                  vehiculo.tipo == 'carro' ? Icons.directions_car : Icons.motorcycle,
+                                  size: 30,
+                                  color: Colors.blue,
+                                );
+                              },
+                            );
+                          },
+                        )
+                      : Image.asset(
+                          VehicleImageService.getVehicleImagePath(vehiculo.tipo),
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Icon(
+                              vehiculo.tipo == 'carro' ? Icons.directions_car : Icons.motorcycle,
+                              size: 30,
+                              color: Colors.blue,
+                            );
+                          },
+                        ),
                 ),
               ),
               title: Text(
@@ -941,9 +1030,50 @@ class _BitacoraScreenState extends State<BitacoraScreen> with TickerProviderStat
   void _editarMantenimiento(Mantenimiento mantenimiento) {
     // TODO: Implementar edición de mantenimiento
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Funcionalidad de edición próximamente disponible'),
-        backgroundColor: Colors.orange,
+      SnackBar(
+        content: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(6),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Colors.blue, Colors.blueAccent],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(3),
+                ),
+                child: const Icon(Icons.edit, color: Colors.white, size: 16),
+              ),
+            ),
+            const SizedBox(width: 12),
+            const Expanded(
+              child: Text(
+                'Funcionalidad de edición próximamente disponible',
+                style: TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
+              ),
+            ),
+          ],
+        ),
+        backgroundColor: const Color(0xFF2C2C2C),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        margin: const EdgeInsets.all(16),
+        duration: const Duration(seconds: 3),
       ),
     );
   }
@@ -969,9 +1099,50 @@ class _BitacoraScreenState extends State<BitacoraScreen> with TickerProviderStat
               Navigator.pop(context);
               await _cargarMantenimientos();
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Mantenimiento eliminado'),
-                  backgroundColor: Colors.red,
+                SnackBar(
+                  content: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(6),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.1),
+                              blurRadius: 4,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: [Colors.red, Colors.redAccent],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                            borderRadius: BorderRadius.circular(3),
+                          ),
+                          child: const Icon(Icons.delete, color: Colors.white, size: 16),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      const Expanded(
+                        child: Text(
+                          'Mantenimiento eliminado correctamente',
+                          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
+                        ),
+                      ),
+                    ],
+                  ),
+                  backgroundColor: const Color(0xFF2C2C2C),
+                  behavior: SnackBarBehavior.floating,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  margin: const EdgeInsets.all(16),
+                  duration: const Duration(seconds: 3),
                 ),
               );
             },

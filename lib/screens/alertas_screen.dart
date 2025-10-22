@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'dart:io';
 import '../models/vehiculo.dart';
+import '../models/documento_vehiculo.dart';
+import '../models/licencia_conductor.dart';
 import '../viewmodels/vehiculo_viewmodel.dart';
 import '../services/maintenance_service.dart';
 import '../services/vehicle_image_service.dart';
+import '../services/documento_service.dart';
+import '../services/licencia_service.dart';
 import '../theme/autocar_theme.dart';
 import '../widgets/background_widgets.dart';
 
@@ -75,6 +80,7 @@ class AlertasScreen extends StatelessWidget {
   Widget _buildConVehiculos(BuildContext context, VehiculoViewModel viewModel) {
     final alertasCriticas = viewModel.alertasCriticas;
     final alertasNormales = _generarAlertasNormales(viewModel);
+    final alertasPositivas = _generarAlertasPositivas(viewModel);
 
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -105,7 +111,7 @@ class AlertasScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildHeaderMejorado(viewModel.vehiculoActual!, alertasCriticas.length, alertasNormales.length),
+            _buildHeaderMejorado(viewModel.vehiculoActual!, alertasCriticas.length, alertasNormales.length, alertasPositivas.length),
             const SizedBox(height: 25),
             
             if (alertasCriticas.isNotEmpty) ...[
@@ -127,7 +133,25 @@ class AlertasScreen extends StatelessWidget {
                 Colors.orangeAccent,
                 Icons.info,
               ),
+              const SizedBox(height: 25),
             ],
+            
+            if (alertasPositivas.isNotEmpty) ...[
+              _buildSeccionAlertas(
+                context,
+                'Logros Positivos',
+                alertasPositivas,
+                Colors.greenAccent,
+                Icons.check_circle,
+              ),
+              const SizedBox(height: 25),
+            ],
+            
+            // Sección de documentos
+            _buildSeccionDocumentos(context, viewModel.vehiculoActual!),
+            
+            // Sección de licencia del conductor
+            _buildSeccionLicencia(),
             
             if (alertasCriticas.isEmpty && alertasNormales.isEmpty) ...[
               _buildSinAlertas(context),
@@ -138,7 +162,7 @@ class AlertasScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildHeaderMejorado(Vehiculo vehiculo, int criticas, int normales) {
+  Widget _buildHeaderMejorado(Vehiculo vehiculo, int criticas, int normales, int positivas) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -153,7 +177,7 @@ class AlertasScreen extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         Text(
-          '${criticas} críticas • ${normales} preventivas',
+          '${criticas} críticas • ${normales} preventivas • ${positivas} logros',
           style: TextStyle(
             fontSize: 16,
             color: Colors.white.withOpacity(0.8),
@@ -181,17 +205,35 @@ class AlertasScreen extends StatelessWidget {
                 ),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(12),
-                  child: Image.asset(
-                    VehicleImageService.getVehicleImagePath(vehiculo.tipo),
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) {
-                      return Icon(
-                        vehiculo.tipo.contains('moto') ? Icons.motorcycle : Icons.directions_car,
-                        color: Colors.white,
-                        size: 30,
-                      );
-                    },
-                  ),
+                  child: vehiculo.imagenPersonalizada != null && vehiculo.imagenPersonalizada!.isNotEmpty
+                      ? Image.file(
+                          File(vehiculo.imagenPersonalizada!),
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Image.asset(
+                              VehicleImageService.getVehicleImagePath(vehiculo.tipo),
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) {
+                                return Icon(
+                                  vehiculo.tipo.contains('moto') ? Icons.motorcycle : Icons.directions_car,
+                                  color: Colors.white,
+                                  size: 30,
+                                );
+                              },
+                            );
+                          },
+                        )
+                      : Image.asset(
+                          VehicleImageService.getVehicleImagePath(vehiculo.tipo),
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Icon(
+                              vehiculo.tipo.contains('moto') ? Icons.motorcycle : Icons.directions_car,
+                              color: Colors.white,
+                              size: 30,
+                            );
+                          },
+                        ),
                 ),
               ),
               const SizedBox(width: 15),
@@ -343,7 +385,7 @@ class AlertasScreen extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 15),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.12),
+        color: Colors.white.withOpacity(0.12), // Volver a la transparencia original
         borderRadius: BorderRadius.circular(22),
         boxShadow: [
           BoxShadow(
@@ -434,14 +476,14 @@ class AlertasScreen extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             decoration: BoxDecoration(
-              color: colorPrincipal.withOpacity(0.2),
+              color: Colors.white, // Fondo blanco sólido para el badge
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: colorPrincipal, width: 1),
+              border: Border.all(color: colorPrincipal, width: 2),
             ),
             child: Text(
-              porcentaje < 20 ? 'Crítico' : 'Bajo',
+              porcentaje < 20 ? 'Crítico' : porcentaje >= 80 ? 'Excelente' : 'Bajo',
               style: TextStyle(
-                color: colorPrincipal,
+                color: porcentaje >= 80 ? Colors.green[800] : colorPrincipal, // Verde más oscuro para mejor contraste
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
               ),
@@ -458,11 +500,11 @@ class AlertasScreen extends StatelessWidget {
       case 'tires': return 'assets/images/maintenance/tire_rotation.png';
       case 'brakes': return 'assets/images/maintenance/brake_service.png';
       case 'battery': return 'assets/images/maintenance/battery_check.png';
-      case 'engine': return 'assets/images/maintenance/engine_service.png';
-      case 'transmission': return 'assets/images/maintenance/transmission.png';
-      case 'air_filter': return 'assets/images/maintenance/air_filter.png';
-      case 'spark_plugs': return 'assets/images/maintenance/spark_plugs.png';
+      case 'coolant': return 'assets/images/maintenance/refrigerante.png';
+      case 'airFilter': return 'assets/images/maintenance/air_filter.png';
       case 'alignment': return 'assets/images/maintenance/ali_bal.png';
+      case 'chain': return 'assets/images/maintenance/kitarrastre.png';
+      case 'sparkPlug': return 'assets/images/maintenance/spark_plugs.png';
       default: return 'assets/images/maintenance/oil_change.png';
     }
   }
@@ -623,6 +665,27 @@ class AlertasScreen extends StatelessWidget {
     return alertas;
   }
 
+  List<MapEntry<String, dynamic>> _generarAlertasPositivas(VehiculoViewModel viewModel) {
+    final vehiculo = viewModel.vehiculoActual;
+    if (vehiculo == null) return [];
+
+    final alertas = <MapEntry<String, dynamic>>[];
+    final maintenanceData = vehiculo.maintenance;
+
+    for (final entry in maintenanceData.entries) {
+      final categoria = entry.key;
+      final data = entry.value;
+      final porcentaje = data.percentage;
+
+      // Alertas positivas (estado excelente)
+      if (porcentaje >= 80) {
+        alertas.add(MapEntry(categoria, data));
+      }
+    }
+
+    return alertas;
+  }
+
   String _getAlertaDescripcion(String categoria, double porcentaje, dynamic data) {
     if (porcentaje <= 10) {
       return 'Mantenimiento crítico requerido';
@@ -630,6 +693,8 @@ class AlertasScreen extends StatelessWidget {
       return 'Mantenimiento urgente necesario';
     } else if (porcentaje <= 60) {
       return 'Programar mantenimiento pronto';
+    } else if (porcentaje >= 80) {
+      return '¡Excelente estado!';
     } else {
       return 'Estado normal';
     }
@@ -672,17 +737,35 @@ class AlertasScreen extends StatelessWidget {
                 ),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(8),
-                  child: Image.asset(
-                    VehicleImageService.getVehicleImagePath(vehiculo.tipo),
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) {
-                      return Icon(
-                        vehiculo.tipo.contains('moto') ? Icons.motorcycle : Icons.directions_car,
-                        size: 30,
-                        color: Colors.blue,
-                      );
-                    },
-                  ),
+                  child: vehiculo.imagenPersonalizada != null && vehiculo.imagenPersonalizada!.isNotEmpty
+                      ? Image.file(
+                          File(vehiculo.imagenPersonalizada!),
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Image.asset(
+                              VehicleImageService.getVehicleImagePath(vehiculo.tipo),
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) {
+                                return Icon(
+                                  vehiculo.tipo.contains('moto') ? Icons.motorcycle : Icons.directions_car,
+                                  size: 30,
+                                  color: Colors.blue,
+                                );
+                              },
+                            );
+                          },
+                        )
+                      : Image.asset(
+                          VehicleImageService.getVehicleImagePath(vehiculo.tipo),
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Icon(
+                              vehiculo.tipo.contains('moto') ? Icons.motorcycle : Icons.directions_car,
+                              size: 30,
+                              color: Colors.blue,
+                            );
+                          },
+                        ),
                 ),
               ),
               title: Text(
@@ -707,6 +790,491 @@ class AlertasScreen extends StatelessWidget {
             const SizedBox(height: 20),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildSeccionDocumentos(BuildContext context, Vehiculo vehiculo) {
+    return FutureBuilder<List<DocumentoVehiculo>>(
+      future: DocumentoService.getDocumentosByVehiculo(vehiculo.id!),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) {
+          return const SizedBox.shrink();
+        }
+
+        final documentos = snapshot.data!;
+        if (documentos.isEmpty) {
+          return const SizedBox.shrink();
+        }
+
+        final documentosVencidos = documentos.where((d) => d.vencido).length;
+        final documentosPorVencer = documentos.where((d) => d.proximoAVencer).length;
+        final documentosAlDia = documentos.where((d) => d.estado == 'Al día').length;
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(8),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 4,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Colors.purple, Colors.purpleAccent],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: const Icon(Icons.folder_open, color: Colors.white, size: 20),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  'Tus Documentos',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white.withOpacity(0.9),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 15),
+            
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.12),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: Colors.white.withOpacity(0.2),
+                  width: 1,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Column(
+                children: [
+                  // Resumen de documentos
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      _buildDocumentoResumen('Total', documentos.length.toString(), Colors.white),
+                      _buildDocumentoResumen('Al día', documentosAlDia.toString(), Colors.green),
+                      _buildDocumentoResumen('Por vencer', documentosPorVencer.toString(), Colors.orange),
+                      _buildDocumentoResumen('Vencidos', documentosVencidos.toString(), Colors.red),
+                    ],
+                  ),
+                  
+                  const SizedBox(height: 20),
+                  
+                  // Lista de documentos
+                  ...documentos.map((documento) => _buildDocumentoCard(documento)).toList(),
+                ],
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildDocumentoResumen(String label, String value, Color color) {
+    return Column(
+      children: [
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: color,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 12,
+            color: Colors.white.withOpacity(0.8),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDocumentoCard(DocumentoVehiculo documento) {
+    Color statusColor;
+    switch (documento.estado) {
+      case 'Vencido':
+        statusColor = Colors.red;
+        break;
+      case 'Por vencer':
+        statusColor = Colors.orange;
+        break;
+      case 'Al día':
+        statusColor = Colors.green;
+        break;
+      default:
+        statusColor = Colors.grey;
+    }
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.08),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: Colors.white.withOpacity(0.1),
+          width: 1,
+        ),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(8),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    statusColor,
+                    statusColor.withOpacity(0.8),
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: Icon(
+                documento.tipo == 'tecnomecanica' ? Icons.car_crash :
+                documento.tipo == 'seguro' ? Icons.verified_user :
+                documento.tipo == 'propiedad' ? Icons.description :
+                Icons.insert_drive_file,
+                color: Colors.white,
+                size: 20,
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  documento.tipoDisplayName,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Vence: ${documento.fechaVencimiento}',
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.8),
+                    fontSize: 14,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: statusColor,
+                width: 2,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: statusColor.withOpacity(0.2),
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Text(
+              documento.estado,
+              style: TextStyle(
+                color: statusColor,
+                fontWeight: FontWeight.bold,
+                fontSize: 12,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSeccionLicencia() {
+    return FutureBuilder<LicenciaConductor?>(
+      future: LicenciaService.getLicenciaVigente(),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData || snapshot.data == null) {
+          return const SizedBox.shrink();
+        }
+
+        final licencia = snapshot.data!;
+        
+        // Solo mostrar si está próxima a vencer o vencida
+        if (licencia.estado == 'Vigente') {
+          return const SizedBox.shrink();
+        }
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(8),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.1),
+                        blurRadius: 4,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Colors.purple, Colors.purpleAccent],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: const Icon(Icons.card_membership, color: Colors.white, size: 20),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  'Licencia del Conductor',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white.withValues(alpha: 0.9),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 15),
+            
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: Colors.white.withValues(alpha: 0.2),
+                  width: 1,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.1),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: _buildLicenciaCard(licencia),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildLicenciaCard(LicenciaConductor licencia) {
+    Color statusColor;
+    switch (licencia.estado) {
+      case 'Vencida':
+        statusColor = Colors.red;
+        break;
+      case 'Por vencer':
+        statusColor = Colors.orange;
+        break;
+      case 'Vigente':
+        statusColor = Colors.green;
+        break;
+      default:
+        statusColor = Colors.grey;
+    }
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.1),
+          width: 1,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: licencia.color.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(
+                  licencia.icon,
+                  color: licencia.color,
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      licencia.categoriaDisplayName,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'N° ${licencia.numeroLicencia}',
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.8),
+                        fontSize: 14,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  licencia.estado,
+                  style: TextStyle(
+                    color: statusColor,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 12,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Expedida:',
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.7),
+                        fontSize: 12,
+                      ),
+                    ),
+                    Text(
+                      licencia.fechaExpedicion,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Vence:',
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.7),
+                        fontSize: 12,
+                      ),
+                    ),
+                    Text(
+                      licencia.fechaVencimiento,
+                      style: TextStyle(
+                        color: statusColor,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          if (licencia.diasRestantes > 0) ...[
+            const SizedBox(height: 8),
+            Text(
+              'Días restantes: ${licencia.diasRestantes}',
+              style: TextStyle(
+                color: statusColor,
+                fontWeight: FontWeight.w500,
+                fontSize: 14,
+              ),
+            ),
+          ],
+          if (licencia.restricciones != null && licencia.restricciones!.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            Text(
+              'Restricciones: ${licencia.restricciones}',
+              style: TextStyle(
+                color: Colors.white.withValues(alpha: 0.8),
+                fontSize: 12,
+              ),
+            ),
+          ],
+        ],
       ),
     );
   }

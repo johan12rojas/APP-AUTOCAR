@@ -8,10 +8,12 @@ import '../viewmodels/vehiculo_viewmodel.dart';
 import '../services/maintenance_service.dart';
 import '../models/vehiculo.dart';
 import '../services/vehicle_image_service.dart';
+import 'map_screen.dart';
 import '../services/user_preferences_service.dart';
 import 'agregar_vehiculo_screen.dart';
 import 'agendar_mantenimiento_screen.dart';
 import 'vehiculo_detail_screen.dart';
+import 'documentos_vehiculo_screen.dart';
 
 class InicioScreen extends StatefulWidget {
   const InicioScreen({super.key});
@@ -475,7 +477,7 @@ class _InicioScreenState extends State<InicioScreen> {
               ),
             ),
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
@@ -510,7 +512,7 @@ class _InicioScreenState extends State<InicioScreen> {
                   '+ Agendar',
                   style: TextStyle(
                     color: Colors.white,
-                    fontSize: 9,
+                    fontSize: 11,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -761,8 +763,50 @@ class _InicioScreenState extends State<InicioScreen> {
                 }
               } else {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('El kilometraje debe ser mayor o igual al actual'),
+                  SnackBar(
+                    content: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(6),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(6),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.1),
+                                blurRadius: 4,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              gradient: const LinearGradient(
+                                colors: [Colors.red, Colors.redAccent],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                              borderRadius: BorderRadius.circular(3),
+                            ),
+                            child: const Icon(Icons.warning, color: Colors.white, size: 16),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        const Expanded(
+                          child: Text(
+                            'El kilometraje debe ser mayor o igual al actual',
+                            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
+                          ),
+                        ),
+                      ],
+                    ),
+                    backgroundColor: const Color(0xFF2C2C2C),
+                    behavior: SnackBarBehavior.floating,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    margin: const EdgeInsets.all(16),
+                    duration: const Duration(seconds: 3),
                   ),
                 );
               }
@@ -1053,10 +1097,10 @@ class _InicioScreenState extends State<InicioScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              _buildLegendItem('Excelente', Colors.green),
-              _buildLegendItem('Bueno', Colors.yellow),
-              _buildLegendItem('Regular', Colors.orange),
-              _buildLegendItem('Crítico', Colors.red),
+              _buildLegendItem('Excelente', Colors.green, Icons.check_circle),
+              _buildLegendItem('Bueno', Colors.yellow, Icons.thumb_up),
+              _buildLegendItem('Regular', Colors.orange, Icons.warning),
+              _buildLegendItem('Crítico', Colors.red, Icons.error),
             ],
           ),
         ],
@@ -1064,7 +1108,7 @@ class _InicioScreenState extends State<InicioScreen> {
     );
   }
 
-  Widget _buildLegendItem(String label, Color color) {
+  Widget _buildLegendItem(String label, Color color, IconData icon) {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -1087,6 +1131,7 @@ class _InicioScreenState extends State<InicioScreen> {
       ],
     );
   }
+
 
   Widget _buildHeaderMejorado(BuildContext context, Vehiculo vehiculo, VehiculoViewModel viewModel) {
     return Column(
@@ -1418,12 +1463,69 @@ class _InicioScreenState extends State<InicioScreen> {
               },
             ),
             _buildCard(
-              icon: Icons.analytics,
-              color: Colors.purpleAccent,
-              title: "Estadísticas",
-              subtitle: "Consumo y km",
+              icon: Icons.folder_open,
+              color: const Color.fromARGB(255, 179, 65, 255),
+              title: "Documentos",
+              subtitle: "Tecno/Seguro",
               onTap: () {
-                // TODO: Implementar pantalla de estadísticas
+                if (viewModel.vehiculoActual != null) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => DocumentosVehiculoScreen(
+                        vehiculo: viewModel.vehiculoActual!,
+                      ),
+                    ),
+                  );
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(6),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(6),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.1),
+                                  blurRadius: 4,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                            child: Container(
+                              decoration: BoxDecoration(
+                                gradient: const LinearGradient(
+                                  colors: [Colors.orange, Colors.orangeAccent],
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                ),
+                                borderRadius: BorderRadius.circular(3),
+                              ),
+                              child: const Icon(Icons.warning, color: Colors.white, size: 16),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          const Expanded(
+                            child: Text(
+                              'Selecciona un vehículo primero',
+                              style: TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
+                            ),
+                          ),
+                        ],
+                      ),
+                      backgroundColor: const Color(0xFF2C2C2C),
+                      behavior: SnackBarBehavior.floating,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      margin: const EdgeInsets.all(16),
+                      duration: const Duration(seconds: 3),
+                    ),
+                  );
+                }
               },
             ),
             _buildCard(
@@ -1432,7 +1534,12 @@ class _InicioScreenState extends State<InicioScreen> {
               title: "Ubicación",
               subtitle: "Talleres cercanos",
               onTap: () {
-                // TODO: Implementar pantalla de ubicación
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const MapScreen(),
+                  ),
+                );
               },
             ),
           ],
@@ -1554,16 +1661,98 @@ class _InicioScreenState extends State<InicioScreen> {
                 
                 Navigator.pop(context);
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Kilometraje actualizado y estados recalculados'),
-                    backgroundColor: Colors.green,
+                  SnackBar(
+                    content: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(6),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(6),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.1),
+                                blurRadius: 4,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              gradient: const LinearGradient(
+                                colors: [Colors.green, Colors.greenAccent],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                              borderRadius: BorderRadius.circular(3),
+                            ),
+                            child: const Icon(Icons.check_circle, color: Colors.white, size: 16),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        const Expanded(
+                          child: Text(
+                            'Kilometraje actualizado y estados recalculados',
+                            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
+                          ),
+                        ),
+                      ],
+                    ),
+                    backgroundColor: const Color(0xFF2C2C2C),
+                    behavior: SnackBarBehavior.floating,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    margin: const EdgeInsets.all(16),
+                    duration: const Duration(seconds: 3),
                   ),
                 );
               } else {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('El kilometraje debe ser mayor al actual'),
-                    backgroundColor: Colors.red,
+                  SnackBar(
+                    content: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(6),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(6),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.1),
+                                blurRadius: 4,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              gradient: const LinearGradient(
+                                colors: [Colors.red, Colors.redAccent],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                              borderRadius: BorderRadius.circular(3),
+                            ),
+                            child: const Icon(Icons.warning, color: Colors.white, size: 16),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        const Expanded(
+                          child: Text(
+                            'El kilometraje debe ser mayor al actual',
+                            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
+                          ),
+                        ),
+                      ],
+                    ),
+                    backgroundColor: const Color(0xFF2C2C2C),
+                    behavior: SnackBarBehavior.floating,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    margin: const EdgeInsets.all(16),
+                    duration: const Duration(seconds: 3),
                   ),
                 );
               }

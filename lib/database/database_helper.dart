@@ -21,7 +21,7 @@ class DatabaseHelper {
     String path = join(await getDatabasesPath(), 'autocar_mantenimiento.db');
     return await openDatabase(
       path,
-      version: 4,
+      version: 7,
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
     );
@@ -70,6 +70,41 @@ class DatabaseHelper {
     } else if (oldVersion < 4) {
       // Agregar campo imagenPersonalizada
       await db.execute('ALTER TABLE vehiculos ADD COLUMN imagenPersonalizada TEXT');
+    } else if (oldVersion < 5) {
+      // Crear tabla de documentos
+      await db.execute('''
+        CREATE TABLE IF NOT EXISTS documentos_vehiculo (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          vehiculoId INTEGER NOT NULL,
+          tipo TEXT NOT NULL,
+          nombreArchivo TEXT NOT NULL,
+          rutaArchivo TEXT NOT NULL,
+          fechaEmision TEXT NOT NULL,
+          fechaVencimiento TEXT NOT NULL,
+          notas TEXT,
+          fechaCreacion TEXT NOT NULL,
+          FOREIGN KEY (vehiculoId) REFERENCES vehiculos (id)
+        )
+      ''');
+    } else if (oldVersion < 6) {
+      // Crear tabla de licencias de conductor
+      await db.execute('''
+        CREATE TABLE IF NOT EXISTS licencias_conductor (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          numeroLicencia TEXT NOT NULL UNIQUE,
+          categoria TEXT NOT NULL,
+          fechaExpedicion TEXT NOT NULL,
+          fechaVencimiento TEXT NOT NULL,
+          organismoExpedidor TEXT NOT NULL,
+          restricciones TEXT,
+          notas TEXT,
+          fechaCreacion TEXT NOT NULL
+        )
+      ''');
+    } else if (oldVersion < 7) {
+      // Agregar campos adicionales para documentos y licencias
+      await db.execute('ALTER TABLE documentos_vehiculo ADD COLUMN rutaArchivoAdicional TEXT');
+      await db.execute('ALTER TABLE licencias_conductor ADD COLUMN rutaFotoLicencia TEXT');
     }
   }
 

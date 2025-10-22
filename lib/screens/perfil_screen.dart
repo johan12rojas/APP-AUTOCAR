@@ -3,12 +3,15 @@ import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import '../models/vehiculo.dart';
+import '../models/licencia_conductor.dart';
 import '../viewmodels/vehiculo_viewmodel.dart';
 import '../widgets/background_widgets.dart';
 import '../database/database_helper.dart';
 import '../services/vehicle_image_service.dart';
 import '../services/user_preferences_service.dart';
 import '../services/pdf_export_service.dart';
+import '../services/licencia_service.dart';
+import '../services/documento_service.dart';
 import 'vehicle_form_screen.dart';
 import 'agregar_vehiculo_screen.dart';
 
@@ -865,9 +868,34 @@ class _PerfilScreenState extends State<PerfilScreen> {
                   ),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(8),
-                    child: Image.asset(
+                    child: vehiculo.imagenPersonalizada != null && vehiculo.imagenPersonalizada!.isNotEmpty
+                        ? Image.file(
+                            File(vehiculo.imagenPersonalizada!),
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Image.asset(
                       VehicleImageService.getVehicleImagePath(vehiculo.tipo),
                       fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) {
+                                  return Icon(
+                                    vehiculo.tipo.contains('moto') ? Icons.motorcycle : Icons.directions_car,
+                                    size: 20,
+                                    color: Colors.blue,
+                                  );
+                                },
+                              );
+                            },
+                          )
+                        : Image.asset(
+                            VehicleImageService.getVehicleImagePath(vehiculo.tipo),
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Icon(
+                                vehiculo.tipo.contains('moto') ? Icons.motorcycle : Icons.directions_car,
+                                size: 20,
+                                color: Colors.blue,
+                              );
+                            },
                     ),
                   ),
                 ),
@@ -1198,15 +1226,49 @@ class _PerfilScreenState extends State<PerfilScreen> {
   void _respaldarDatos() {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: const Text(
+        content: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(6),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Colors.orange, Colors.orangeAccent],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(3),
+                ),
+                child: const Icon(Icons.backup, color: Colors.white, size: 16),
+              ),
+            ),
+            const SizedBox(width: 12),
+            const Expanded(
+              child: Text(
           'Función de respaldo en desarrollo',
-          style: TextStyle(color: Colors.white),
+                style: TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
         ),
-        backgroundColor: Colors.orange,
+            ),
+          ],
+        ),
+        backgroundColor: const Color(0xFF2C2C2C),
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(12),
         ),
+        margin: const EdgeInsets.all(16),
+        duration: const Duration(seconds: 3),
       ),
     );
   }
@@ -1214,15 +1276,49 @@ class _PerfilScreenState extends State<PerfilScreen> {
   void _mostrarConfiguracion() {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: const Text(
+        content: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(6),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Colors.blue, Colors.blueAccent],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(3),
+                ),
+                child: const Icon(Icons.settings, color: Colors.white, size: 16),
+              ),
+            ),
+            const SizedBox(width: 12),
+            const Expanded(
+              child: Text(
           'Configuración en desarrollo',
-          style: TextStyle(color: Colors.white),
+                style: TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
         ),
-        backgroundColor: Colors.orange,
+            ),
+          ],
+        ),
+        backgroundColor: const Color(0xFF2C2C2C),
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(12),
         ),
+        margin: const EdgeInsets.all(16),
+        duration: const Duration(seconds: 3),
       ),
     );
   }
@@ -1443,6 +1539,11 @@ class _PerfilScreenState extends State<PerfilScreen> {
                     ],
                   ),
                 ),
+
+              const SizedBox(height: 20),
+
+              // Sección de Licencia del Conductor
+              _buildSeccionLicencia(),
             ],
           ),
         );
@@ -1468,23 +1569,40 @@ class _PerfilScreenState extends State<PerfilScreen> {
           Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(6),
+                padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.2),
+                  color: Colors.white, // Fondo blanco sólido
                   borderRadius: BorderRadius.circular(8),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1),
+                      blurRadius: 4,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient( // Gradiente para el icono
+                      colors: [color, color.withOpacity(0.7)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(4),
                 ),
                 child: Icon(
                   _getIconForSection(titulo),
-                  color: color,
+                    color: Colors.white, // Icono blanco sobre gradiente
                   size: 16,
+                  ),
                 ),
               ),
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
                   titulo,
-                  style: TextStyle(
-                    color: color,
+                  style: const TextStyle(
+                    color: Colors.white, // Cambiar a blanco
                     fontSize: 15,
                     fontWeight: FontWeight.bold,
                   ),
@@ -1748,9 +1866,25 @@ class _PerfilScreenState extends State<PerfilScreen> {
               try {
                 await viewModel.eliminarVehiculo(vehiculo.id!);
                 Navigator.pop(context);
-                _mostrarSnackBar('Vehículo eliminado correctamente', Colors.green);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Vehículo eliminado correctamente'),
+                    backgroundColor: Colors.green,
+                    behavior: SnackBarBehavior.floating,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    duration: const Duration(seconds: 3),
+                  ),
+                );
               } catch (e) {
-                _mostrarSnackBar('Error al eliminar vehículo: $e', Colors.red);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Error al eliminar vehículo: $e'),
+                    backgroundColor: Colors.red,
+                    behavior: SnackBarBehavior.floating,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    duration: const Duration(seconds: 3),
+                  ),
+                );
               }
             },
             style: ElevatedButton.styleFrom(
@@ -1764,15 +1898,1372 @@ class _PerfilScreenState extends State<PerfilScreen> {
     );
   }
 
-  void _mostrarSnackBar(String mensaje, Color color) {
+  Widget _buildSeccionLicencia() {
+    return FutureBuilder<LicenciaConductor?>(
+      future: LicenciaService.getLicenciaVigente(),
+      builder: (context, snapshot) {
+        return Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.12),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: Colors.white.withValues(alpha: 0.2),
+              width: 1,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.1),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(8),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.1),
+                          blurRadius: 4,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Colors.purple, Colors.purpleAccent],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: const Icon(Icons.card_membership, color: Colors.white, size: 20),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  const Text(
+                    'Licencia del Conductor',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 15),
+              
+              if (snapshot.connectionState == ConnectionState.waiting)
+                const Center(
+                  child: CircularProgressIndicator(
+                    color: Colors.purple,
+                  ),
+                )
+              else if (snapshot.hasData && snapshot.data != null)
+                _buildLicenciaCard(snapshot.data!)
+              else
+                _buildSinLicencia(),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildLicenciaCard(LicenciaConductor licencia) {
+    Color statusColor;
+    switch (licencia.estado) {
+      case 'Vencida':
+        statusColor = Colors.red;
+        break;
+      case 'Por vencer':
+        statusColor = Colors.orange;
+        break;
+      case 'Vigente':
+        statusColor = Colors.green;
+        break;
+      default:
+        statusColor = Colors.grey;
+    }
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.1),
+          width: 1,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Información de la licencia
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      licencia.categoriaDisplayName,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'N° ${licencia.numeroLicencia}',
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.8),
+                        fontSize: 14,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  licencia.estado,
+                  style: TextStyle(
+                    color: statusColor,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 12,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          // Imagen de la licencia más grande
+          Center(
+            child: Container(
+              width: double.infinity,
+              height: 120,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: Colors.white.withValues(alpha: 0.3),
+                  width: 1,
+                ),
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: licencia.rutaFotoLicencia != null && licencia.rutaFotoLicencia!.isNotEmpty
+                    ? Image.file(
+                        File(licencia.rutaFotoLicencia!),
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          // Si la imagen no se puede cargar, mostrar el icono por defecto
+                          return Container(
+                            decoration: BoxDecoration(
+                              color: licencia.color.withValues(alpha: 0.2),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Icon(
+                              licencia.icon,
+                              color: licencia.color,
+                              size: 40,
+                            ),
+                          );
+                        },
+                      )
+                    : Container(
+                        decoration: BoxDecoration(
+                          color: licencia.color.withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Icon(
+                          licencia.icon,
+                          color: licencia.color,
+                          size: 40,
+                        ),
+                      ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Expedida:',
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.7),
+                        fontSize: 12,
+                      ),
+                    ),
+                    Text(
+                      licencia.fechaExpedicion,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Vence:',
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.7),
+                        fontSize: 12,
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(4),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.1),
+                            blurRadius: 2,
+                            offset: const Offset(0, 1),
+                          ),
+                        ],
+                      ),
+                      child: Text(
+                        licencia.fechaVencimiento,
+                        style: TextStyle(
+                          color: statusColor,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          if (licencia.restricciones != null && licencia.restricciones!.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            Text(
+              'Restricciones: ${licencia.restricciones}',
+              style: TextStyle(
+                color: Colors.white.withValues(alpha: 0.8),
+                fontSize: 12,
+              ),
+            ),
+          ],
+          const SizedBox(height: 12),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      Colors.blueAccent.withValues(alpha: 0.8),
+                      Colors.blue.withValues(alpha: 0.6),
+                    ],
+                    begin: Alignment.centerLeft,
+                    end: Alignment.centerRight,
+                  ),
+                  borderRadius: BorderRadius.circular(15),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.2),
+                      blurRadius: 4,
+                      offset: const Offset(2, 2),
+                    ),
+                  ],
+                ),
+                child: TextButton(
+                  onPressed: () => _editarLicencia(licencia),
+                  child: const Text(
+                    'Editar',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      Colors.redAccent.withValues(alpha: 0.8),
+                      Colors.red.withValues(alpha: 0.6),
+                    ],
+                    begin: Alignment.centerLeft,
+                    end: Alignment.centerRight,
+                  ),
+                  borderRadius: BorderRadius.circular(15),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.2),
+                      blurRadius: 4,
+                      offset: const Offset(2, 2),
+                    ),
+                  ],
+                ),
+                child: TextButton(
+                  onPressed: () => _eliminarLicencia(licencia),
+                  child: const Text(
+                    'Eliminar',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSinLicencia() {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.orange.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: Colors.orange.withValues(alpha: 0.3),
+          width: 1,
+        ),
+      ),
+      child: Column(
+        children: [
+          const Icon(
+            Icons.card_membership_outlined,
+            color: Colors.orange,
+            size: 48,
+          ),
+          const SizedBox(height: 12),
+          const Text(
+            'No tienes licencia registrada',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            'Agrega tu licencia de conducir para recibir alertas de vencimiento',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 14,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 16),
+          ElevatedButton.icon(
+            onPressed: _agregarLicencia,
+            icon: const Icon(Icons.add),
+            label: const Text('Agregar Licencia'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.orange,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _editarLicencia(LicenciaConductor licencia) async {
+    final numeroController = TextEditingController(text: licencia.numeroLicencia);
+    final categoriaController = TextEditingController(text: licencia.categoria);
+    final fechaExpedicionController = TextEditingController(text: licencia.fechaExpedicion);
+    final fechaVencimientoController = TextEditingController(text: licencia.fechaVencimiento);
+    final organismoController = TextEditingController(text: licencia.organismoExpedidor);
+    final restriccionesController = TextEditingController(text: licencia.restricciones ?? '');
+    final notasController = TextEditingController(text: licencia.notas ?? '');
+    File? fotoLicencia;
+    
+    // Cargar la foto existente si existe
+    if (licencia.rutaFotoLicencia != null && licencia.rutaFotoLicencia!.isNotEmpty) {
+      fotoLicencia = File(licencia.rutaFotoLicencia!);
+    }
+
+    await showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              backgroundColor: const Color(0xFF1E1E1E),
+              title: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Colors.purple, Colors.purpleAccent],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Icon(
+                      Icons.edit,
+                      color: Colors.white,
+                      size: 20,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  const Expanded(
+                    child: Text(
+                      'Editar Licencia',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              content: SizedBox(
+                width: MediaQuery.of(context).size.width * 0.8,
+                height: MediaQuery.of(context).size.height * 0.6,
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Sección de foto
+                      Container(
+                        width: double.infinity,
+                        height: 120,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.05),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.1),
+                            width: 1,
+                          ),
+                        ),
+                        child: InkWell(
+                          onTap: () => _mostrarOpcionesImagenLicencia(setState, fotoLicencia, (newImage) {
+                            setState(() {
+                              fotoLicencia = newImage;
+                            });
+                          }),
+                          child: fotoLicencia == null
+                              ? Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      Icons.add_a_photo,
+                                      color: Colors.white.withValues(alpha: 0.6),
+                                      size: 40,
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Text(
+                                      'Toca para cambiar foto',
+                                      style: TextStyle(
+                                        color: Colors.white.withValues(alpha: 0.6),
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                  ],
+                                )
+                              : ClipRRect(
+                                  borderRadius: BorderRadius.circular(12),
+                                  child: Image.file(
+                                    fotoLicencia!,
+                                    width: double.infinity,
+                                    height: 120,
+                                    fit: BoxFit.cover,
+                                  ),
+                                ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      // Campos del formulario
+                      _buildFormField(
+                        controller: numeroController,
+                        label: 'Número de Licencia',
+                        icon: Icons.badge,
+                      ),
+                      const SizedBox(height: 16),
+                      _buildDropdownField(
+                        controller: categoriaController,
+                        label: 'Categoría',
+                        icon: Icons.category,
+                        items: const [
+                          DropdownMenuItem(value: 'A1', child: Text('A1 - Motos 125cc')),
+                          DropdownMenuItem(value: 'A2', child: Text('A2 - Motos 250cc')),
+                          DropdownMenuItem(value: 'B1', child: Text('B1 - Particulares')),
+                          DropdownMenuItem(value: 'B2', child: Text('B2 - Comerciales')),
+                          DropdownMenuItem(value: 'C1', child: Text('C1 - Carga 7.5t')),
+                          DropdownMenuItem(value: 'C2', child: Text('C2 - Carga 15t')),
+                          DropdownMenuItem(value: 'C3', child: Text('C3 - Carga >15t')),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      _buildDateField(
+                        controller: fechaExpedicionController,
+                        label: 'Fecha de Expedición',
+                        icon: Icons.calendar_today,
+                        initialDate: DateTime.parse(licencia.fechaExpedicion),
+                        firstDate: DateTime(2000),
+                        lastDate: DateTime.now(),
+                      ),
+                      const SizedBox(height: 16),
+                      _buildDateField(
+                        controller: fechaVencimientoController,
+                        label: 'Fecha de Vencimiento',
+                        icon: Icons.event,
+                        initialDate: DateTime.parse(licencia.fechaVencimiento),
+                        firstDate: DateTime.now(),
+                        lastDate: DateTime.now().add(const Duration(days: 3650)),
+                      ),
+                      const SizedBox(height: 16),
+                      _buildFormField(
+                        controller: organismoController,
+                        label: 'Organismo Expedidor',
+                        icon: Icons.account_balance,
+                      ),
+                      const SizedBox(height: 16),
+                      _buildFormField(
+                        controller: restriccionesController,
+                        label: 'Restricciones (opcional)',
+                        icon: Icons.warning,
+                      ),
+                      const SizedBox(height: 16),
+                      _buildFormField(
+                        controller: notasController,
+                        label: 'Notas (opcional)',
+                        icon: Icons.note,
+                        maxLines: 2,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: const Text('Cancelar', style: TextStyle(color: Colors.grey)),
+                ),
+                ElevatedButton(
+                  onPressed: () async {
+                    if (numeroController.text.isNotEmpty &&
+                        categoriaController.text.isNotEmpty &&
+                        fechaExpedicionController.text.isNotEmpty &&
+                        fechaVencimientoController.text.isNotEmpty &&
+                        organismoController.text.isNotEmpty) {
+                      
+                      String? rutaFotoLicencia = licencia.rutaFotoLicencia;
+                      
+                      // Si hay una nueva foto, guardarla
+                      if (fotoLicencia != null) {
+                        // Si había una foto anterior, eliminarla
+                        if (licencia.rutaFotoLicencia != null && licencia.rutaFotoLicencia!.isNotEmpty) {
+                          try {
+                            await File(licencia.rutaFotoLicencia!).delete();
+                          } catch (e) {
+                            // Ignorar errores al eliminar archivo anterior
+                          }
+                        }
+                        rutaFotoLicencia = await DocumentoService.saveDocumentImage(
+                          fotoLicencia!,
+                          licencia.id ?? 0,
+                          'licencia_conductor',
+                        );
+                      } else if (licencia.rutaFotoLicencia != null && licencia.rutaFotoLicencia!.isNotEmpty) {
+                        // Si se eliminó la foto, eliminar el archivo
+                        try {
+                          await File(licencia.rutaFotoLicencia!).delete();
+                          rutaFotoLicencia = null;
+                        } catch (e) {
+                          // Ignorar errores al eliminar archivo
+                        }
+                      }
+
+                      final licenciaActualizada = licencia.copyWith(
+                        numeroLicencia: numeroController.text,
+                        categoria: categoriaController.text,
+                        fechaExpedicion: fechaExpedicionController.text,
+                        fechaVencimiento: fechaVencimientoController.text,
+                        organismoExpedidor: organismoController.text,
+                        restricciones: restriccionesController.text.isNotEmpty ? restriccionesController.text : null,
+                        notas: notasController.text.isNotEmpty ? notasController.text : null,
+                        rutaFotoLicencia: rutaFotoLicencia,
+                      );
+
+                      try {
+                        await LicenciaService.updateLicencia(licenciaActualizada);
+                        if (context.mounted) {
+                          Navigator.of(context).pop();
+                          setState(() {}); // Refrescar la UI
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(mensaje),
-        backgroundColor: color,
+                              content: Row(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.all(6),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(6),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.black.withValues(alpha: 0.1),
+                                          blurRadius: 4,
+                                          offset: const Offset(0, 2),
+                                        ),
+                                      ],
+                                    ),
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        gradient: const LinearGradient(
+                                          colors: [Colors.green, Colors.greenAccent],
+                                          begin: Alignment.topLeft,
+                                          end: Alignment.bottomRight,
+                                        ),
+                                        borderRadius: BorderRadius.circular(3),
+                                      ),
+                                      padding: const EdgeInsets.all(4),
+                                      child: const Icon(Icons.check, color: Colors.white, size: 16),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  const Expanded(
+                                    child: Text(
+                                      'Licencia actualizada exitosamente',
+                                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              backgroundColor: const Color(0xFF2C2C2C),
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              margin: const EdgeInsets.all(16),
         duration: const Duration(seconds: 3),
       ),
+                          );
+                        }
+                      } catch (e) {
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Row(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.all(6),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(6),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.black.withValues(alpha: 0.1),
+                                          blurRadius: 4,
+                                          offset: const Offset(0, 2),
+                                        ),
+                                      ],
+                                    ),
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        gradient: const LinearGradient(
+                                          colors: [Colors.red, Colors.redAccent],
+                                          begin: Alignment.topLeft,
+                                          end: Alignment.bottomRight,
+                                        ),
+                                        borderRadius: BorderRadius.circular(3),
+                                      ),
+                                      padding: const EdgeInsets.all(4),
+                                      child: const Icon(Icons.error, color: Colors.white, size: 16),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Text(
+                                      'Error: $e',
+                                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              backgroundColor: const Color(0xFF2C2C2C),
+                              behavior: SnackBarBehavior.floating,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              margin: const EdgeInsets.all(16),
+                              duration: const Duration(seconds: 3),
+                            ),
+                          );
+                        }
+                      }
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(6),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(6),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withValues(alpha: 0.1),
+                                      blurRadius: 4,
+                                      offset: const Offset(0, 2),
+                                    ),
+                                  ],
+                                ),
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    gradient: const LinearGradient(
+                                      colors: [Colors.orange, Colors.orangeAccent],
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
+                                    ),
+                                    borderRadius: BorderRadius.circular(3),
+                                  ),
+                                  padding: const EdgeInsets.all(4),
+                                  child: const Icon(Icons.warning, color: Colors.white, size: 16),
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              const Expanded(
+                                child: Text(
+                                  'Completa todos los campos obligatorios',
+                                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
+                                ),
+                              ),
+                            ],
+                          ),
+                          backgroundColor: const Color(0xFF2C2C2C),
+                          behavior: SnackBarBehavior.floating,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          margin: const EdgeInsets.all(16),
+                          duration: const Duration(seconds: 3),
+                        ),
+                      );
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.purple,
+                    foregroundColor: Colors.white,
+                  ),
+                  child: const Text('Actualizar'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  void _mostrarOpcionesImagenLicencia(StateSetter setState, File? currentImage, Function(File?) onImageChanged) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: const Color(0xFF1E1E1E),
+          title: const Text('Seleccionar Imagen', style: TextStyle(color: Colors.white)),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: const Icon(Icons.camera_alt, color: Colors.white),
+                title: const Text('Cámara', style: TextStyle(color: Colors.white)),
+                onTap: () async {
+                  Navigator.of(context).pop();
+                  final picker = ImagePicker();
+                  final pickedFile = await picker.pickImage(source: ImageSource.camera);
+                  if (pickedFile != null) {
+                    onImageChanged(File(pickedFile.path));
+                  }
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.photo_library, color: Colors.white),
+                title: const Text('Galería', style: TextStyle(color: Colors.white)),
+                onTap: () async {
+                  Navigator.of(context).pop();
+                  final picker = ImagePicker();
+                  final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+                  if (pickedFile != null) {
+                    onImageChanged(File(pickedFile.path));
+                  }
+                },
+              ),
+              if (currentImage != null)
+                ListTile(
+                  leading: const Icon(Icons.delete, color: Colors.red),
+                  title: const Text('Eliminar foto', style: TextStyle(color: Colors.red)),
+                  onTap: () {
+                    Navigator.of(context).pop();
+                    onImageChanged(null);
+                  },
+                ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildFormField({
+    required TextEditingController controller,
+    required String label,
+    required IconData icon,
+    int maxLines = 1,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.1),
+          width: 1,
+        ),
+      ),
+      child: TextField(
+        controller: controller,
+        style: const TextStyle(color: Colors.white),
+        maxLines: maxLines,
+        decoration: InputDecoration(
+          labelText: label,
+          labelStyle: TextStyle(color: Colors.white.withValues(alpha: 0.7)),
+          prefixIcon: Icon(icon, color: Colors.white.withValues(alpha: 0.7)),
+          border: InputBorder.none,
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDropdownField({
+    required TextEditingController controller,
+    required String label,
+    required IconData icon,
+    required List<DropdownMenuItem<String>> items,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.1),
+          width: 1,
+        ),
+      ),
+      child: DropdownButtonFormField<String>(
+        value: controller.text.isEmpty ? null : controller.text,
+        style: const TextStyle(color: Colors.white),
+        decoration: InputDecoration(
+          labelText: label,
+          labelStyle: TextStyle(color: Colors.white.withValues(alpha: 0.7)),
+          prefixIcon: Icon(icon, color: Colors.white.withValues(alpha: 0.7)),
+          border: InputBorder.none,
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        ),
+        dropdownColor: const Color(0xFF2C2C2C),
+        items: items,
+        onChanged: (value) => controller.text = value ?? '',
+      ),
+    );
+  }
+
+  Widget _buildDateField({
+    required TextEditingController controller,
+    required String label,
+    required IconData icon,
+    required DateTime initialDate,
+    required DateTime firstDate,
+    required DateTime lastDate,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.1),
+          width: 1,
+        ),
+      ),
+      child: TextField(
+        controller: controller,
+        style: const TextStyle(color: Colors.white),
+        decoration: InputDecoration(
+          labelText: label,
+          labelStyle: TextStyle(color: Colors.white.withValues(alpha: 0.7)),
+          prefixIcon: Icon(icon, color: Colors.white.withValues(alpha: 0.7)),
+          border: InputBorder.none,
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        ),
+        readOnly: true,
+        onTap: () async {
+          final date = await showDatePicker(
+            context: context,
+            initialDate: initialDate,
+            firstDate: firstDate,
+            lastDate: lastDate,
+          );
+          if (date != null) {
+            controller.text = date.toIso8601String().split('T')[0];
+          }
+        },
+      ),
+    );
+  }
+
+  Future<void> _eliminarLicencia(LicenciaConductor licencia) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: const Color(0xFF1E1E1E),
+          title: const Text('Eliminar Licencia', style: TextStyle(color: Colors.white)),
+          content: Text(
+            '¿Estás seguro de que quieres eliminar la licencia ${licencia.categoriaDisplayName}?',
+            style: const TextStyle(color: Colors.white),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('Cancelar', style: TextStyle(color: Colors.grey)),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+                foregroundColor: Colors.white,
+              ),
+              child: const Text('Eliminar'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirmed == true) {
+      try {
+        // Eliminar la foto si existe
+        if (licencia.rutaFotoLicencia != null && licencia.rutaFotoLicencia!.isNotEmpty) {
+          try {
+            await File(licencia.rutaFotoLicencia!).delete();
+          } catch (e) {
+            // Ignorar errores al eliminar archivo
+          }
+        }
+        
+        await LicenciaService.deleteLicencia(licencia.id ?? 0);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Licencia eliminada exitosamente'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        setState(() {}); // Refrescar la UI
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error al eliminar: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _agregarLicencia() async {
+    final numeroController = TextEditingController();
+    final categoriaController = TextEditingController();
+    final fechaExpedicionController = TextEditingController();
+    final fechaVencimientoController = TextEditingController();
+    final organismoController = TextEditingController();
+    final restriccionesController = TextEditingController();
+    final notasController = TextEditingController();
+    File? fotoLicencia;
+
+    fechaExpedicionController.text = DateTime.now().toIso8601String().split('T')[0];
+
+    await showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              backgroundColor: const Color(0xFF1E1E1E),
+              title: const Text('Agregar Licencia', style: TextStyle(color: Colors.white)),
+              content: SizedBox(
+                width: MediaQuery.of(context).size.width * 0.9,
+                height: MediaQuery.of(context).size.height * 0.7,
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Contenedor de imagen más pequeño
+                      Container(
+                        width: double.infinity,
+                        height: 150,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.05),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.2),
+                            width: 1,
+                          ),
+                        ),
+                        child: Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            borderRadius: BorderRadius.circular(12),
+                            onTap: () async {
+                              final source = await showDialog<String>(
+                                context: context,
+                                builder: (BuildContext context) {
+                                  return AlertDialog(
+                                    backgroundColor: const Color(0xFF1E1E1E),
+                                    title: const Text('Seleccionar Imagen', style: TextStyle(color: Colors.white)),
+                                    content: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        ListTile(
+                                          leading: const Icon(Icons.camera_alt, color: Colors.white),
+                                          title: const Text('Cámara', style: TextStyle(color: Colors.white)),
+                                          onTap: () => Navigator.of(context).pop('camera'),
+                                        ),
+                                        ListTile(
+                                          leading: const Icon(Icons.photo_library, color: Colors.white),
+                                          title: const Text('Galería', style: TextStyle(color: Colors.white)),
+                                          onTap: () => Navigator.of(context).pop('gallery'),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                },
+                              );
+                              if (source != null) {
+                                File? imageFile;
+                                if (source == 'camera') {
+                                  imageFile = await DocumentoService.pickImageFromCamera();
+                                } else {
+                                  imageFile = await DocumentoService.pickImageFromGallery();
+                                }
+                                if (imageFile != null) {
+                                  setDialogState(() {
+                                    fotoLicencia = imageFile;
+                                  });
+                                }
+                              }
+                            },
+                            child: fotoLicencia == null
+                                ? Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(
+                                        Icons.add_a_photo,
+                                        color: Colors.white.withValues(alpha: 0.6),
+                                        size: 40,
+                                      ),
+                                      const SizedBox(height: 8),
+                                      Text(
+                                        'Toca para agregar foto de licencia',
+                                        style: TextStyle(
+                                          color: Colors.white.withValues(alpha: 0.6),
+                                          fontSize: 14,
+                                        ),
+                                        textAlign: TextAlign.center,
+                                      ),
+                                    ],
+                                  )
+                                : Stack(
+                                    children: [
+                                      ClipRRect(
+                                        borderRadius: BorderRadius.circular(12),
+                                        child: Image.file(
+                                          fotoLicencia!,
+                                          width: double.infinity,
+                                          height: 150,
+                                          fit: BoxFit.cover,
+                                        ),
+                                      ),
+                                      Positioned(
+                                        top: 8,
+                                        right: 8,
+                                        child: Container(
+                                          decoration: BoxDecoration(
+                                            color: Colors.black.withValues(alpha: 0.6),
+                                            borderRadius: BorderRadius.circular(20),
+                                          ),
+                                          child: IconButton(
+                                            icon: const Icon(Icons.close, color: Colors.white, size: 20),
+                                            onPressed: () {
+                                              setDialogState(() {
+                                                fotoLicencia = null;
+                                              });
+                                            },
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      TextField(
+                        controller: numeroController,
+                        style: const TextStyle(color: Colors.white),
+                        decoration: InputDecoration(
+                          labelText: 'Número de Licencia',
+                          labelStyle: TextStyle(color: Colors.white.withValues(alpha: 0.7)),
+                          enabledBorder: UnderlineInputBorder(
+                            borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.3)),
+                          ),
+                          focusedBorder: const UnderlineInputBorder(
+                            borderSide: BorderSide(color: Colors.purple),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      DropdownButtonFormField<String>(
+                        value: categoriaController.text.isEmpty ? null : categoriaController.text,
+                        style: const TextStyle(color: Colors.white),
+                        decoration: InputDecoration(
+                          labelText: 'Categoría',
+                          labelStyle: TextStyle(color: Colors.white.withValues(alpha: 0.7)),
+                          enabledBorder: UnderlineInputBorder(
+                            borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.3)),
+                          ),
+                          focusedBorder: const UnderlineInputBorder(
+                            borderSide: BorderSide(color: Colors.purple),
+                          ),
+                        ),
+                        dropdownColor: const Color(0xFF2C2C2C),
+                        items: const [
+                          DropdownMenuItem(value: 'A1', child: Text('A1 - Motos 125cc')),
+                          DropdownMenuItem(value: 'A2', child: Text('A2 - Motos 250cc')),
+                          DropdownMenuItem(value: 'B1', child: Text('B1 - Particulares')),
+                          DropdownMenuItem(value: 'B2', child: Text('B2 - Comerciales')),
+                          DropdownMenuItem(value: 'C1', child: Text('C1 - Carga 7.5t')),
+                          DropdownMenuItem(value: 'C2', child: Text('C2 - Carga 15t')),
+                          DropdownMenuItem(value: 'C3', child: Text('C3 - Carga >15t')),
+                        ],
+                        onChanged: (value) => categoriaController.text = value ?? '',
+                      ),
+                      const SizedBox(height: 16),
+                      TextField(
+                        controller: fechaExpedicionController,
+                        style: const TextStyle(color: Colors.white),
+                        decoration: InputDecoration(
+                          labelText: 'Fecha de Expedición',
+                          labelStyle: TextStyle(color: Colors.white.withValues(alpha: 0.7)),
+                          enabledBorder: UnderlineInputBorder(
+                            borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.3)),
+                          ),
+                          focusedBorder: const UnderlineInputBorder(
+                            borderSide: BorderSide(color: Colors.purple),
+                          ),
+                        ),
+                        readOnly: true,
+                        onTap: () async {
+                          final date = await showDatePicker(
+                            context: context,
+                            initialDate: DateTime.now(),
+                            firstDate: DateTime(2000),
+                            lastDate: DateTime.now(),
+                          );
+                          if (date != null) {
+                            fechaExpedicionController.text = date.toIso8601String().split('T')[0];
+                          }
+                        },
+                      ),
+                      const SizedBox(height: 16),
+                      TextField(
+                        controller: fechaVencimientoController,
+                        style: const TextStyle(color: Colors.white),
+                        decoration: InputDecoration(
+                          labelText: 'Fecha de Vencimiento',
+                          labelStyle: TextStyle(color: Colors.white.withValues(alpha: 0.7)),
+                          enabledBorder: UnderlineInputBorder(
+                            borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.3)),
+                          ),
+                          focusedBorder: const UnderlineInputBorder(
+                            borderSide: BorderSide(color: Colors.purple),
+                          ),
+                        ),
+                        readOnly: true,
+                        onTap: () async {
+                          final date = await showDatePicker(
+                            context: context,
+                            initialDate: DateTime.now().add(const Duration(days: 365)),
+                            firstDate: DateTime.now(),
+                            lastDate: DateTime.now().add(const Duration(days: 3650)),
+                          );
+                          if (date != null) {
+                            fechaVencimientoController.text = date.toIso8601String().split('T')[0];
+                          }
+                        },
+                      ),
+                      const SizedBox(height: 16),
+                      TextField(
+                        controller: organismoController,
+                        style: const TextStyle(color: Colors.white),
+                        decoration: InputDecoration(
+                          labelText: 'Organismo Expedidor',
+                          labelStyle: TextStyle(color: Colors.white.withValues(alpha: 0.7)),
+                          enabledBorder: UnderlineInputBorder(
+                            borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.3)),
+                          ),
+                          focusedBorder: const UnderlineInputBorder(
+                            borderSide: BorderSide(color: Colors.purple),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      TextField(
+                        controller: restriccionesController,
+                        style: const TextStyle(color: Colors.white),
+                        decoration: InputDecoration(
+                          labelText: 'Restricciones (opcional)',
+                          labelStyle: TextStyle(color: Colors.white.withValues(alpha: 0.7)),
+                          enabledBorder: UnderlineInputBorder(
+                            borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.3)),
+                          ),
+                          focusedBorder: const UnderlineInputBorder(
+                            borderSide: BorderSide(color: Colors.purple),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      TextField(
+                        controller: notasController,
+                        style: const TextStyle(color: Colors.white),
+                        decoration: InputDecoration(
+                          labelText: 'Notas (opcional)',
+                          labelStyle: TextStyle(color: Colors.white.withValues(alpha: 0.7)),
+                          enabledBorder: UnderlineInputBorder(
+                            borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.3)),
+                          ),
+                          focusedBorder: const UnderlineInputBorder(
+                            borderSide: BorderSide(color: Colors.purple),
+                          ),
+                        ),
+                        maxLines: 2,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: const Text('Cancelar', style: TextStyle(color: Colors.grey)),
+                ),
+                ElevatedButton(
+                  onPressed: () async {
+                    if (numeroController.text.isNotEmpty &&
+                        categoriaController.text.isNotEmpty &&
+                        fechaExpedicionController.text.isNotEmpty &&
+                        fechaVencimientoController.text.isNotEmpty &&
+                        organismoController.text.isNotEmpty) {
+                      
+                      String? rutaFotoLicencia;
+                      if (fotoLicencia != null) {
+                        rutaFotoLicencia = await DocumentoService.saveDocumentImage(
+                          fotoLicencia!,
+                          0,
+                          'licencia_conductor',
+                        );
+                      }
+
+                      final licencia = LicenciaConductor(
+                        numeroLicencia: numeroController.text,
+                        categoria: categoriaController.text,
+                        fechaExpedicion: fechaExpedicionController.text,
+                        fechaVencimiento: fechaVencimientoController.text,
+                        organismoExpedidor: organismoController.text,
+                        restricciones: restriccionesController.text.isNotEmpty ? restriccionesController.text : null,
+                        notas: notasController.text.isNotEmpty ? notasController.text : null,
+                        rutaFotoLicencia: rutaFotoLicencia,
+                        fechaCreacion: DateTime.now(),
+                      );
+
+                      try {
+                        await LicenciaService.insertLicencia(licencia);
+                        if (context.mounted) {
+                          Navigator.of(context).pop();
+                          setState(() {}); // Refrescar la pantalla principal
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Licencia agregada exitosamente'),
+                              backgroundColor: Colors.green,
+                            ),
+                          );
+                        }
+                      } catch (e) {
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('Error: $e'),
+                              backgroundColor: Colors.red,
+                            ),
+                          );
+                        }
+                      }
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Completa todos los campos obligatorios'),
+                          backgroundColor: Colors.orange,
+                        ),
+                      );
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.purple,
+                    foregroundColor: Colors.white,
+                  ),
+                  child: const Text('Agregar'),
+                ),
+              ],
+            );
+          },
+        );
+      },
     );
   }
 }

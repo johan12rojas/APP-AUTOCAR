@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import '../theme/autocar_theme.dart';
 import '../widgets/background_widgets.dart';
 import '../models/mantenimiento.dart';
+import '../services/maintenance_data_service.dart';
 
 class CompletarMantenimientoScreen extends StatefulWidget {
   final Mantenimiento mantenimiento;
@@ -25,16 +26,45 @@ class _CompletarMantenimientoScreenState extends State<CompletarMantenimientoScr
   final _ubicacionRealController = TextEditingController();
   
   DateTime _fechaReal = DateTime.now();
+  MaintenanceInfo? _maintenanceInfo;
 
   @override
   void initState() {
     super.initState();
-    // Pre-llenar algunos campos con valores del mantenimiento programado
-    _costoRealController.text = widget.mantenimiento.costo > 0 
-        ? widget.mantenimiento.costo.toString() 
-        : '';
-    _notasRealesController.text = widget.mantenimiento.notas;
-    _ubicacionRealController.text = widget.mantenimiento.ubicacion;
+    // Los controladores se inicializan aquí
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Pre-llenar campos después de que los controladores estén listos
+    _prefillFields();
+  }
+
+  void _prefillFields() {
+    // Obtener información específica del tipo de mantenimiento
+    _maintenanceInfo = MaintenanceDataService.getMaintenanceInfo(widget.mantenimiento.tipo);
+    
+    // Debug: imprimir información
+    print('🔧 Tipo de mantenimiento: ${widget.mantenimiento.tipo}');
+    print('📋 MaintenanceInfo encontrado: ${_maintenanceInfo != null}');
+    
+    if (_maintenanceInfo != null) {
+      print('✅ Pre-llenando con datos específicos para Cúcuta');
+      _costoRealController.text = _maintenanceInfo!.costoEstimado.toString();
+      _ubicacionRealController.text = _maintenanceInfo!.tallerRecomendado;
+      _notasRealesController.text = _maintenanceInfo!.descripcion;
+      print('💰 Costo: ${_maintenanceInfo!.costoEstimado}');
+      print('🏪 Taller: ${_maintenanceInfo!.tallerRecomendado}');
+    } else {
+      print('⚠️ Usando datos del mantenimiento programado');
+      // Fallback a valores del mantenimiento programado
+      _costoRealController.text = widget.mantenimiento.costo > 0 
+          ? widget.mantenimiento.costo.toString() 
+          : '';
+      _notasRealesController.text = widget.mantenimiento.notas;
+      _ubicacionRealController.text = widget.mantenimiento.ubicacion;
+    }
   }
 
   @override
@@ -52,10 +82,14 @@ class _CompletarMantenimientoScreenState extends State<CompletarMantenimientoScr
     return Scaffold(
       backgroundColor: AutocarTheme.darkBackground,
       appBar: AppBar(
-        title: const Text('Completar Mantenimiento'),
+        title: const Text(
+          'Completar Mantenimiento',
+          style: TextStyle(fontSize: 16),
+        ),
         backgroundColor: AutocarTheme.darkBackground,
         foregroundColor: AutocarTheme.textPrimary,
         elevation: 0,
+        centerTitle: true,
       ),
       body: BackgroundGradientWidget(
         child: SingleChildScrollView(
@@ -119,6 +153,61 @@ class _CompletarMantenimientoScreenState extends State<CompletarMantenimientoScr
             ],
           ),
           const SizedBox(height: 15),
+          
+          // Información específica del mantenimiento si está disponible
+          if (_maintenanceInfo != null) ...[
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: AutocarTheme.cardBackground.withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: AutocarTheme.accentOrange.withValues(alpha: 0.3),
+                ),
+              ),
+              child: Column(
+                children: [
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.info_outline,
+                        color: AutocarTheme.accentOrange,
+                        size: 16,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Información Específica para Cúcuta',
+                        style: TextStyle(
+                          color: AutocarTheme.accentOrange,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    _maintenanceInfo!.descripcion,
+                    style: TextStyle(
+                      color: AutocarTheme.textPrimary,
+                      fontSize: 12,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Duración estimada: ${_maintenanceInfo!.duracionEstimada}',
+                    style: TextStyle(
+                      color: AutocarTheme.textSecondary,
+                      fontSize: 10,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 15),
+          ],
+          
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
@@ -132,10 +221,10 @@ class _CompletarMantenimientoScreenState extends State<CompletarMantenimientoScr
                 '${widget.mantenimiento.fecha.day}/${widget.mantenimiento.fecha.month}/${widget.mantenimiento.fecha.year}',
                 Icons.calendar_today,
               ),
-              if (widget.mantenimiento.costo > 0)
+              if (_maintenanceInfo != null)
                 _buildInfoItem(
-                  'Estimado',
-                  '\$${widget.mantenimiento.costo.toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},')}',
+                  'Costo Est.',
+                  '\$${_maintenanceInfo!.costoEstimado.toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},')}',
                   Icons.attach_money,
                 ),
             ],
@@ -372,12 +461,34 @@ class _CompletarMantenimientoScreenState extends State<CompletarMantenimientoScr
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Costo Real',
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-            color: AutocarTheme.textPrimary,
-            fontWeight: FontWeight.w600,
-          ),
+        Row(
+          children: [
+            Text(
+              'Costo Real',
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                color: AutocarTheme.textPrimary,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            if (_maintenanceInfo != null) ...[
+              const SizedBox(width: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                decoration: BoxDecoration(
+                  color: Colors.green.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  'Pre-llenado',
+                  style: TextStyle(
+                    color: Colors.green,
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ],
         ),
         const SizedBox(height: 10),
         TextFormField(
@@ -390,6 +501,12 @@ class _CompletarMantenimientoScreenState extends State<CompletarMantenimientoScr
             hintStyle: TextStyle(color: AutocarTheme.textSecondary),
             prefixText: '\$ ',
             prefixStyle: TextStyle(color: AutocarTheme.textSecondary),
+            suffixText: 'COP',
+            suffixStyle: TextStyle(
+              color: AutocarTheme.textSecondary,
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+            ),
             filled: true,
             fillColor: AutocarTheme.cardBackground.withValues(alpha: 0.2),
             border: OutlineInputBorder(
@@ -413,6 +530,52 @@ class _CompletarMantenimientoScreenState extends State<CompletarMantenimientoScr
             ),
           ),
         ),
+        if (_maintenanceInfo != null) ...[
+          const SizedBox(height: 8),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.green.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(
+                color: Colors.green.withValues(alpha: 0.2),
+              ),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.info_outline,
+                  color: Colors.green,
+                  size: 16,
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Costo estimado para Cúcuta:',
+                        style: TextStyle(
+                          color: Colors.green,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                        ),
+                      ),
+                      Text(
+                        '\$${_maintenanceInfo!.costoEstimado.toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},')} COP',
+                        style: TextStyle(
+                          color: AutocarTheme.textPrimary,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 13,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ],
     );
   }
@@ -421,12 +584,34 @@ class _CompletarMantenimientoScreenState extends State<CompletarMantenimientoScr
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Taller o Ubicación Real',
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-            color: AutocarTheme.textPrimary,
-            fontWeight: FontWeight.w600,
-          ),
+        Row(
+          children: [
+            Text(
+              'Taller o Ubicación Real',
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                color: AutocarTheme.textPrimary,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            if (_maintenanceInfo != null) ...[
+              const SizedBox(width: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                decoration: BoxDecoration(
+                  color: AutocarTheme.accentOrange.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  'Recomendado',
+                  style: TextStyle(
+                    color: AutocarTheme.accentOrange,
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ],
         ),
         const SizedBox(height: 10),
         TextFormField(
@@ -458,6 +643,58 @@ class _CompletarMantenimientoScreenState extends State<CompletarMantenimientoScr
             ),
           ),
         ),
+        if (_maintenanceInfo != null) ...[
+          const SizedBox(height: 8),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: AutocarTheme.cardBackground.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(
+                color: AutocarTheme.accentOrange.withValues(alpha: 0.2),
+              ),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(
+                      Icons.location_on,
+                      color: AutocarTheme.accentOrange,
+                      size: 16,
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      'Taller Recomendado:',
+                      style: TextStyle(
+                        color: AutocarTheme.accentOrange,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  _maintenanceInfo!.tallerRecomendado,
+                  style: TextStyle(
+                    color: AutocarTheme.textPrimary,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 13,
+                  ),
+                ),
+                Text(
+                  _maintenanceInfo!.ubicacionTaller,
+                  style: TextStyle(
+                    color: AutocarTheme.textSecondary,
+                    fontSize: 11,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ],
     );
   }

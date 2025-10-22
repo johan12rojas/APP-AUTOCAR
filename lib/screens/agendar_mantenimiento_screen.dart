@@ -4,6 +4,7 @@ import '../theme/autocar_theme.dart';
 import '../widgets/background_widgets.dart';
 import '../models/vehiculo.dart';
 import '../services/maintenance_service.dart';
+import '../services/maintenance_data_service.dart';
 
 class AgendarMantenimientoScreen extends StatefulWidget {
   final Vehiculo vehiculo;
@@ -34,6 +35,18 @@ class _AgendarMantenimientoScreenState extends State<AgendarMantenimientoScreen>
     final tiposDisponibles = MaintenanceService.getAvailableCategories(widget.vehiculo.tipo);
     if (tiposDisponibles.isNotEmpty) {
       _tipoSeleccionado = tiposDisponibles.first;
+      _prefillFields();
+    }
+  }
+
+  void _prefillFields() {
+    // Pre-llenar campos con datos específicos para Cúcuta
+    final maintenanceInfo = MaintenanceDataService.getMaintenanceInfo(_tipoSeleccionado);
+    
+    if (maintenanceInfo != null) {
+      _costoController.text = maintenanceInfo.costoEstimado.toString();
+      _ubicacionController.text = maintenanceInfo.tallerRecomendado;
+      _notasController.text = maintenanceInfo.descripcion;
     }
   }
 
@@ -175,6 +188,7 @@ class _AgendarMantenimientoScreenState extends State<AgendarMantenimientoScreen>
                 if (newValue != null) {
                   setState(() {
                     _tipoSeleccionado = newValue;
+                    _prefillFields(); // Pre-llenar campos cuando cambie el tipo
                   });
                 }
               },
